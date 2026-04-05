@@ -174,6 +174,9 @@ export default {
 			}
 			const data = j.data;
 			console.log("文件列表:", data);
+			if (data.length > 5) {
+				return new Response("文件太大，无法下载预览", { status: 400 });
+			}
 			if (data.length == 0) {
 				return new Response("文件不存在", { status: 404 });
 			}
@@ -194,7 +197,8 @@ export default {
 			return new Response(combinedBlob, {
 				headers: {
 					'Content-Type': 'application/octet-stream',
-					'Content-Disposition': `attachment; filename="${filename}"`
+					'Content-Disposition': `attachment; filename="${filename}"`,
+					'Content-Length': combinedBlob.size.toString(),
 				}
 			});
 		}
