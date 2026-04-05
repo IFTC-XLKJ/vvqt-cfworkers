@@ -40,6 +40,10 @@ export default {
 				try {
 					const data = JSON.parse(event.data);
 					console.log("收到消息:", event.data);
+					if (data.type == "upload_file") {
+						const { name, path, size, part } = data;
+						console.log("上传文件:", name, path, size, part);
+					}
 				} catch (e) {
 					console.error(e);
 					console.error("错误的消息:", event.data);
