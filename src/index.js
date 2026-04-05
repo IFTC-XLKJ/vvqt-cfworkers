@@ -9,6 +9,7 @@
  */
 
 import { createClient } from "@supabase/supabase-js";
+import path from "path";
 
 const SUPABASE_URL = "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY";
@@ -151,6 +152,12 @@ export default {
 				status: 101,
 				webSocket: client,
 			});
+		}
+		if (pathnames[1] == "download") {
+			const EID = pathnames[2];
+			const timestamp = pathnames[3];
+			const filename = pathnames[4];
+			const filePath = path.join(EID, timestamp, filename);
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
