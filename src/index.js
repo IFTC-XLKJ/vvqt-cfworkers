@@ -129,6 +129,7 @@ export default {
 			const [client, server] = Object.values(webSocketPair);
 			server.accept();
 			const EID = pathnames[2];
+			const UUID = genUUID();
 			server.addEventListener('message', (event) => {
 			});
 			server.addEventListener('close', async () => {
@@ -152,6 +153,17 @@ export default {
 				}));
 				return server.close();
 			}
+			connects[EID][UUID] = {
+				socket: server,
+				uuid: UUID,
+			};
+			server.send(JSON.stringify({
+				code: 200,
+				bcode: 10100,
+				msg: "连接成功",
+				timestamp: Date.now(),
+				uuid: UUID,
+			}));
 			return new Response(null, {
 				status: 101,
 				webSocket: client,
@@ -208,3 +220,10 @@ export default {
 		return new Response("404 Not Found", { status: 404 });
 	},
 };
+
+function genUUID() {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	});
+}
