@@ -19,7 +19,6 @@
 		"enabled": true
 	},
 	"upload_source_maps": true,
-	// --- 新增部分开始 ---
 	"triggers": {
 		"crons": [
 			"*/5 * * * *"
