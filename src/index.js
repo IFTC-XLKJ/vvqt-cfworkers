@@ -12,6 +12,7 @@ import { createClient } from "@supabase/supabase-js";
 import path from "path";
 import fs from "fs/promises";
 import mime from "mime";
+import timers from "timers";
 
 const SUPABASE_URL = "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY";
@@ -19,19 +20,17 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const database = supabase.from("qtfile");
 const storage = supabase.storage.from("qtfiles");
 
-console.log(await fs.readdir(path.join("/bundle")))
-
 const fileCache = {};
 const connects = {};
 
-setInterval(() => {
-	console.log("清理临时文件缓存");
-	for (let i in fileCache) {
-		if (Date.now() - fileCache[i].timestamp > 1000 * 60 * 60) {
-			delete fileCache[i];
+function cleanExpiredCache() {
+	const now = Date.now();
+	for (let key in fileCache) {
+		if (fileCache[key].timestamp && now - fileCache[key].timestamp > 1000 * 60 * 60) {
+			delete fileCache[key];
 		}
 	}
-}, 1000 * 60);
+}
 
 export default {
 	async fetch(request, env, ctx) {
@@ -191,11 +190,11 @@ export default {
 			const filePath = path.join(EID, timestamp, filename);
 			if (fileCache[filePath]) {
 				console.log("命中临时文件缓存:", filePath);
-				return new Response(fileCache[filePath], {
+				return new Response(fileCache[filePath].blob, { // 注意这里取 .blob
 					headers: {
 						'Content-Type': getMIMEType(filename) || 'application/octet-stream',
 						'Content-Disposition': `attachment; filename="${filename}"`,
-						'Content-Length': combinedBlob.size.toString(),
+						'Content-Length': fileCache[filePath].blob.size.toString(), // 注意这里取 .blob.size
 						'Access-Control-Allow-Origin': '*',
 						'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
 						'Accept-Ranges': 'bytes',
@@ -240,7 +239,10 @@ export default {
 			console.log("文件列表:", fileBlobs);
 			console.log("MIME类型:", getMIMEType(filename));
 			const combinedBlob = new Blob(fileBlobs, { type: getMIMEType(filename) || 'application/octet-stream' });
-			fileCache[filePath] = combinedBlob;
+			fileCache[filePath] = {
+				blob: combinedBlob,
+				timestamp: Date.now()
+			};
 			return new Response(combinedBlob, {
 				headers: {
 					'Content-Type': getMIMEType(filename) || 'application/octet-stream',
@@ -253,6 +255,17 @@ export default {
 			});
 		}
 		return new Response("404 Not Found", { status: 404 });
+	},
+	async scheduled(event, env, ctx) {
+		console.log("定时任务触发:", event.cron);
+
+		// 在这里执行你的定时逻辑
+		// 例如：清理过期的缓存或数据库记录
+		try {
+			await cleanExpiredRecords(env);
+		} catch (error) {
+			console.error("定时任务执行失败:", error);
+		}
 	},
 };
 
@@ -275,5 +288,3 @@ async function isFileExists(filePath) {
 		return false;
 	}
 }
-
-isFileExists("index.js").then(console.log);
