@@ -256,6 +256,11 @@ export default {
 		}
 		if (pathnames[1] == "listfile") {
 		  const EID = pathnames[2];
+		  if (!EID) {
+		    return new Response("缺少设备ID", {
+		      status: 400
+		    });
+		  }
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
