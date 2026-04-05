@@ -254,6 +254,9 @@ export default {
 				}
 			});
 		}
+		if (pathnames[1] == "listfile") {
+		  const EID = pathnames[2];
+		}
 		return new Response("404 Not Found", { status: 404 });
 	},
 	async scheduled(event, env, ctx) {
