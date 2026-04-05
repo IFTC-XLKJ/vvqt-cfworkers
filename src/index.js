@@ -48,5 +48,6 @@ export default {
 				webSocket: client,
 			});
 		}
+		return new Response("404 Not Found", { status: 404 });
 	},
 };
