@@ -184,7 +184,7 @@ export default {
 					console.error(k.error);
 					return new Response("文件不存在", { status: 404 });
 				}
-				const blob = await k.data.blob();
+				const blob = k.data;
 				fileBlobs.push(blob);
 			}
 			const combinedBlob = new Blob(fileBlobs, { type: 'application/octet-stream' });
