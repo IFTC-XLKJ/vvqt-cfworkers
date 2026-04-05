@@ -21,7 +21,8 @@ export default {
 				return new Response('Expected Upgrade: websocket', { status: 426 });
 			}
 			const webSocketPair = new WebSocketPair();
-			const [client, server] = webSocketPair;
+			const [client, server] = Object.values(webSocketPair);
+			server.accept();
 			const EID = pathnames[2];
 			return new Response(null, {
 				status: 101,
