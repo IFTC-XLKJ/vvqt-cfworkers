@@ -173,6 +173,7 @@ export default {
 				return new Response("文件不存在", { status: 404 });
 			}
 			const data = j.data;
+			console.log("文件列表:", data);
 			if (data.length == 0) {
 				return new Response("文件不存在", { status: 404 });
 			}
