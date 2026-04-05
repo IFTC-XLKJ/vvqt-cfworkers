@@ -23,6 +23,11 @@ export default {
 			const webSocketPair = new WebSocketPair();
 			const [client, server] = Object.values(webSocketPair);
 			server.accept();
+			server.nativeSend = server.send;
+			server.send = function (...args) {
+				console.log("发送消息", ...args);
+				server.nativeSend(args);
+			}
 			const EID = pathnames[2];
 			server.addEventListener('message', (event) => {
 				try {
