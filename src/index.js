@@ -189,6 +189,7 @@ export default {
 				const blob = k.data;
 				fileBlobs.push(blob);
 			}
+			console.log("文件列表:", fileBlobs);
 			const combinedBlob = new Blob(fileBlobs, { type: 'application/octet-stream' });
 			return new Response(combinedBlob, {
 				headers: {
