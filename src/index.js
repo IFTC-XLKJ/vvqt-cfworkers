@@ -124,7 +124,7 @@ export default {
 			const [client, server] = Object.values(webSocketPair);
 			server.accept();
 			const EID = pathnames[2];
-			server.addEventListener('message', (event) => { 
+			server.addEventListener('message', (event) => {
 			});
 			server.addEventListener('close', async () => {
 				console.log("设备断开连接:", EID);
@@ -136,8 +136,16 @@ export default {
 					msg: "缺少设备ID",
 					timestamp: Date.now()
 				}));
-				server.close();
-				return;
+				return server.close();
+			}
+			if (!connects[EID]) {
+				server.send(JSON.stringify({
+					code: 400,
+					bcode: 10101,
+					msg: "目标设备未连接",
+					timestamp: Date.now()
+				}));
+				return server.close();
 			}
 		}
 		return new Response("404 Not Found", { status: 404 });
