@@ -12,10 +12,10 @@ import { createClient } from "@supabase/supabase-js";
 import path from "path";
 import fs from "fs/promises";
 import mime from "mime";
-import timers from "timers";
+import * as process from "node:process";
 
-const SUPABASE_URL = "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY";
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const database = supabase.from("qtfile");
 const storage = supabase.storage.from("qtfiles");
