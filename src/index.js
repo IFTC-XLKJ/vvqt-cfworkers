@@ -29,7 +29,8 @@ export default {
 					const data = JSON.parse(event.data);
 					console.log("收到消息:", event.data);
 				} catch (e) {
-					console.log("消息解析失败:", event.data);
+					console.error(e);
+					console.error("错误的消息:", event.data);
 				}
 			});
 			if (!EID) {
