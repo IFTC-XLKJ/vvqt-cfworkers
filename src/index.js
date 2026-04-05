@@ -179,18 +179,25 @@ export default {
 				return new Response("缺少参数", { status: 400 });
 			}
 			const filePath = path.join(EID, timestamp, filename);
+			const tmpFilePath = path.join("/tmp", "files", filePath);
 			if (await isFileExists(path.join("/tmp", "files", filePath))) {
-				const fileBlob = await fs.readFile(path.join("/tmp", "files", filePath));
-				return new Response(fileBlob, {
-					headers: {
-						'Content-Type': getMIMEType(filename) || 'application/octet-stream',
-						'Content-Disposition': `attachment; filename="${filename}"`,
-						'Content-Length': fileBlob.length.toString(),
-						'Access-Control-Allow-Origin': '*',
-						'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-						'Accept-Ranges': 'bytes',
-					}
-				});
+				console.log("命中临时文件缓存:", tmpFilePath);
+				try {
+					const fileBuffer = await fs.readFile(tmpFilePath);
+					return new Response(fileBuffer, {
+						headers: {
+							'Content-Type': getMIMEType(filename) || 'application/octet-stream',
+							'Content-Disposition': `attachment; filename="${filename}"`,
+							'Content-Length': fileBuffer.length.toString(),
+							'Access-Control-Allow-Origin': '*',
+							'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+							'Accept-Ranges': 'bytes',
+							'X-Cache-Status': 'HIT-TMP'
+						}
+					});
+				} catch (e) {
+					console.error("读取临时文件失败:", e);
+				}
 			}
 			console.log("下载文件:", filePath);
 			const j = await storage
@@ -229,12 +236,14 @@ export default {
 			console.log("文件列表:", fileBlobs);
 			console.log("MIME类型:", getMIMEType(filename));
 			const combinedBlob = new Blob(fileBlobs, { type: getMIMEType(filename) || 'application/octet-stream' });
+			const arrayBuffer = await combinedBlob.arrayBuffer();
+			const buffer = Buffer.from(arrayBuffer);
 			try {
-				await fs.mkdir(path.join("/tmp", "files", EID, timestamp), { recursive: true });
-				await fs.writeFile(path.join("/tmp", "files", filePath), combinedBlob);
-				console.log("文件保存成功:", filePath);
+				await fs.mkdir(path.dirname(tmpFilePath), { recursive: true });
+				await fs.writeFile(tmpFilePath, buffer);
+				console.log("文件已保存到临时目录:", tmpFilePath);
 			} catch (e) {
-				console.error("保存文件时出错:", e);
+				console.error("保存文件到 /tmp 时出错:", e);
 			}
 			return new Response(combinedBlob, {
 				headers: {
