@@ -53,6 +53,9 @@ export default {
 				console.log('删除记录', d);
 				console.log("设备断开连接:", EID);
 			});
+			server.addEventListener('error', (event) => {
+				console.error("出现错误", event);
+			});
 			if (!EID) {
 				server.send(JSON.stringify({
 					code: 400,
