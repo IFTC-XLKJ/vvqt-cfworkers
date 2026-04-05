@@ -11,6 +11,8 @@
 import { createClient } from "@supabase/supabase-js";
 import path from "path";
 import fs from "fs/promises";
+import mime from "mime";
+import { get } from "http";
 
 const SUPABASE_URL = "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY";
@@ -211,7 +213,7 @@ export default {
 			const combinedBlob = new Blob(fileBlobs, { type: 'application/octet-stream' });
 			return new Response(combinedBlob, {
 				headers: {
-					'Content-Type': 'application/octet-stream',
+					'Content-Type': getMIMEType(filename) || 'application/octet-stream',
 					'Content-Disposition': `attachment; filename="${filename}"`,
 					'Content-Length': combinedBlob.size.toString(),
 				}
@@ -226,4 +228,8 @@ function genUUID() {
 		var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
 		return v.toString(16);
 	});
+}
+
+function getMIMEType(filename) {
+	return mime.getType(filename);
 }
