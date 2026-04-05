@@ -23,6 +23,16 @@ console.log(await fs.readdir(path.join("/bundle")))
 
 const fileCache = {};
 const connects = {};
+
+setInterval(() => {
+	console.log("清理临时文件缓存");
+	for (let i in fileCache) {
+		if (Date.now() - fileCache[i].timestamp > 1000 * 60 * 60) {
+			delete fileCache[i];
+		}
+	}
+}, 1000 * 60);
+
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
