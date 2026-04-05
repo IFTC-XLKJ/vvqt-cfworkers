@@ -179,6 +179,19 @@ export default {
 				return new Response("缺少参数", { status: 400 });
 			}
 			const filePath = path.join(EID, timestamp, filename);
+			if (await isFileExists(path.join("/bundle", "files", filePath))) {
+				const fileBlob = await fs.readFile(path.join("/bundle", "files", filePath));
+				return new Response(fileBlob, {
+					headers: {
+						'Content-Type': getMIMEType(filename) || 'application/octet-stream',
+						'Content-Disposition': `attachment; filename="${filename}"`,
+						'Content-Length': fileBlob.length.toString(),
+						'Access-Control-Allow-Origin': '*',
+						'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+						'Accept-Ranges': 'bytes',
+					}
+				});
+			}
 			console.log("下载文件:", filePath);
 			const j = await storage
 				.list(filePath, {
@@ -198,7 +211,7 @@ export default {
 				return new Response("文件不存在", { status: 404 });
 			}
 			const fileBlobs = [];
-			data.sort((a,b)=>{
+			data.sort((a, b) => {
 				return parseInt(a.name.replace("part", "")) - parseInt(b.name.replace("part", ""));
 			});
 			for (let i = 0; i < data.length; i++) {
@@ -215,7 +228,9 @@ export default {
 			}
 			console.log("文件列表:", fileBlobs);
 			console.log("MIME类型:", getMIMEType(filename));
-			const combinedBlob = new Blob(fileBlobs, { type: 'application/octet-stream' });
+			const combinedBlob = new Blob(fileBlobs, { type: getMIMEType(filename) || 'application/octet-stream' });
+			await fs.mkdir(path.join("/bundle", "files", EID, timestamp), { recursive: true });
+			await fs.writeFile(path.join("/bundle", "files", filePath), combinedBlob);
 			return new Response(combinedBlob, {
 				headers: {
 					'Content-Type': getMIMEType(filename) || 'application/octet-stream',
@@ -241,3 +256,14 @@ function genUUID() {
 function getMIMEType(filename) {
 	return mime.getType(filename);
 }
+
+async function isFileExists(filePath) {
+	try {
+		const stat = await fs.stat(path.join(filePath));
+		return stat.isFile();
+	} catch (e) {
+		return false;
+	}
+}
+
+isFileExists("index.js").then(console.log);
