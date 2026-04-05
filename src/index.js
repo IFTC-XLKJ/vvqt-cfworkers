@@ -12,7 +12,6 @@ import { createClient } from "@supabase/supabase-js";
 import path from "path";
 import fs from "fs/promises";
 import mime from "mime";
-import { get } from "http";
 
 const SUPABASE_URL = "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY";
@@ -22,6 +21,7 @@ const storage = supabase.storage.from("qtfiles");
 
 console.log(await fs.readdir(path.join("/bundle")))
 
+const fileCache = {};
 const connects = {};
 export default {
 	async fetch(request, env, ctx) {
@@ -179,27 +179,20 @@ export default {
 				return new Response("缺少参数", { status: 400 });
 			}
 			const filePath = path.join(EID, timestamp, filename);
-			const tmpFilePath = path.join("/tmp", "files", filePath);
-			if (await isFileExists(path.join("/tmp", "files", filePath))) {
-				console.log("命中临时文件缓存:", tmpFilePath);
-				try {
-					const fileBuffer = await fs.readFile(tmpFilePath);
-					return new Response(fileBuffer, {
-						headers: {
-							'Content-Type': getMIMEType(filename) || 'application/octet-stream',
-							'Content-Disposition': `attachment; filename="${filename}"`,
-							'Content-Length': fileBuffer.length.toString(),
-							'Access-Control-Allow-Origin': '*',
-							'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-							'Accept-Ranges': 'bytes',
-							'X-Cache-Status': 'HIT-TMP'
-						}
-					});
-				} catch (e) {
-					console.error("读取临时文件失败:", e);
-				}
+			if (fileCache[filePath]) {
+				console.log("命中临时文件缓存:", filePath);
+				return new Response(fileCache[filePath], {
+					headers: {
+						'Content-Type': getMIMEType(filename) || 'application/octet-stream',
+						'Content-Disposition': `attachment; filename="${filename}"`,
+						'Content-Length': combinedBlob.size.toString(),
+						'Access-Control-Allow-Origin': '*',
+						'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+						'Accept-Ranges': 'bytes',
+					}
+				});
 			}
-			console.log("未命中临时文件缓存:", tmpFilePath);
+			console.log("未命中临时文件缓存:", filePath);
 			console.log("下载文件:", filePath);
 			const j = await storage
 				.list(filePath, {
@@ -237,15 +230,7 @@ export default {
 			console.log("文件列表:", fileBlobs);
 			console.log("MIME类型:", getMIMEType(filename));
 			const combinedBlob = new Blob(fileBlobs, { type: getMIMEType(filename) || 'application/octet-stream' });
-			const arrayBuffer = await combinedBlob.arrayBuffer();
-			const buffer = Buffer.from(arrayBuffer);
-			try {
-				await fs.mkdir(path.dirname(tmpFilePath), { recursive: true });
-				await fs.writeFile(tmpFilePath, buffer);
-				console.log("文件已保存到临时目录:", tmpFilePath);
-			} catch (e) {
-				console.error("保存文件到 /tmp 时出错:", e);
-			}
+			fileCache[filePath] = combinedBlob;
 			return new Response(combinedBlob, {
 				headers: {
 					'Content-Type': getMIMEType(filename) || 'application/octet-stream',
