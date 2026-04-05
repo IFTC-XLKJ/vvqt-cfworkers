@@ -214,6 +214,7 @@ export default {
 				console.log("下载完成:", file.name);
 			}
 			console.log("文件列表:", fileBlobs);
+			console.log("MIME类型:", getMIMEType(filename));
 			const combinedBlob = new Blob(fileBlobs, { type: 'application/octet-stream' });
 			return new Response(combinedBlob, {
 				headers: {
