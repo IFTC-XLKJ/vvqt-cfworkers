@@ -15,6 +15,7 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5v
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const database = supabase.from("qtfile");
 
+const connects = {};
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
@@ -43,6 +44,16 @@ export default {
 					if (data.type == "upload_file") {
 						const { name, path, size, part } = data;
 						console.log("上传文件:", name, path, size, part);
+						const currentConnects = Object.keys(connects[EID]);
+						for (let i = 0; i < currentConnects.length; i++) {
+							const connect = connects[EID][currentConnects[i]];
+							connect.socket.send(JSON.stringify({
+								code: 200,
+								bcode: 10103,
+								msg: "接收文件",
+								data: {},
+							}));
+						}
 					}
 				} catch (e) {
 					console.error(e);
@@ -93,6 +104,7 @@ export default {
 				}
 			}
 			console.log("连接成功:", EID);
+			connects[EID] = {};
 			server.send(JSON.stringify({
 				code: 200,
 				bcode: 10100,
@@ -103,6 +115,30 @@ export default {
 				status: 101,
 				webSocket: client,
 			});
+		}
+		if (pathnames[1] == "connect") {
+			if (!upgradeHeader || upgradeHeader !== 'websocket') {
+				return new Response('Expected Upgrade: websocket', { status: 426 });
+			}
+			const webSocketPair = new WebSocketPair();
+			const [client, server] = Object.values(webSocketPair);
+			server.accept();
+			const EID = pathnames[2];
+			server.addEventListener('message', (event) => { 
+			});
+			server.addEventListener('close', async () => {
+				console.log("设备断开连接:", EID);
+			});
+			if (!EID) {
+				server.send(JSON.stringify({
+					code: 400,
+					bcode: 10102,
+					msg: "缺少设备ID",
+					timestamp: Date.now()
+				}));
+				server.close();
+				return;
+			}
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
