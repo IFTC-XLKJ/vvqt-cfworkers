@@ -24,6 +24,25 @@ export default {
 			const [client, server] = Object.values(webSocketPair);
 			server.accept();
 			const EID = pathnames[2];
+			server.addEventListener('open', (event) => {
+				if (!EID) {
+					server.send({
+						code: 400,
+						bcode: 10102,
+						msg: "缺少设备ID",
+						timestamp: Date.now()
+					});
+					server.close();
+					return;
+				}
+				console.log("连接成功:", EID);
+				server.send({
+					code: 200,
+					bcode: 10100,
+					msg: "连接成功",
+					timestamp: Date.now()
+				});
+			});
 			return new Response(null, {
 				status: 101,
 				webSocket: client,
