@@ -199,6 +199,7 @@ export default {
 					console.error("读取临时文件失败:", e);
 				}
 			}
+			console.log("未命中临时文件缓存:", tmpFilePath);
 			console.log("下载文件:", filePath);
 			const j = await storage
 				.list(filePath, {
