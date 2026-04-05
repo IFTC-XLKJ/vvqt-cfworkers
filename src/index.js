@@ -11,13 +11,9 @@
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
-		switch (url.pathname) {
-			case '/message':
-				return new Response('Hello, World!');
-			case '/random':
-				return new Response(crypto.randomUUID());
-			default:
-				return new Response('Not Found', { status: 404 });
-		}
+		const pathname = url.pathname;
+		const method = request.method;
+		const pathnames = pathname.split('/');
+		console.log("收到请求:", method, pathname);
 	},
 };
