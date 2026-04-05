@@ -180,6 +180,7 @@ export default {
 			const fileBlobs = [];
 			for (let i = 0; i < data.length; i++) {
 				const file = data[i];
+				console.log("下载文件:", path.join(filePath, file.name));
 				const k = await storage.download(path.join(filePath, file.name));
 				if (k.error) {
 					console.error(k.error);
