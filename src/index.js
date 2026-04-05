@@ -15,6 +15,7 @@ const SUPABASE_URL = "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY";
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const database = supabase.from("qtfile");
+const storage = supabase.storage.from("qtfiles");
 
 const connects = {};
 export default {
@@ -162,6 +163,37 @@ export default {
 			}
 			const filePath = path.join(EID, timestamp, filename);
 			console.log("下载文件:", filePath);
+			const j = await storage
+				.list(filePath, {
+					limit: 1000000,
+					offset: 0,
+				});
+			if (j.error) {
+				console.error(j.error);
+				return new Response("文件不存在", { status: 404 });
+			}
+			const data = j.data;
+			if (data.length == 0) {
+				return new Response("文件不存在", { status: 404 });
+			}
+			const fileBlobs = [];
+			for (let i = 0; i < data.length; i++) {
+				const file = data[i];
+				const k = await storage.download(file.name);
+				if (k.error) {
+					console.error(k.error);
+					return new Response("文件不存在", { status: 404 });
+				}
+				const blob = await k.data.blob();
+				fileBlobs.push(blob);
+			}
+			const combinedBlob = new Blob(fileBlobs, { type: 'application/octet-stream' });
+			return new Response(combinedBlob, {
+				headers: {
+					'Content-Type': 'application/octet-stream',
+					'Content-Disposition': `attachment; filename="${filename}"`
+				}
+			});
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
