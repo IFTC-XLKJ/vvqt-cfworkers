@@ -229,8 +229,13 @@ export default {
 			console.log("文件列表:", fileBlobs);
 			console.log("MIME类型:", getMIMEType(filename));
 			const combinedBlob = new Blob(fileBlobs, { type: getMIMEType(filename) || 'application/octet-stream' });
-			await fs.mkdir(path.join("/bundle", "files", EID, timestamp), { recursive: true });
-			await fs.writeFile(path.join("/bundle", "files", filePath), combinedBlob);
+			try {
+				await fs.mkdir(path.join("/bundle", "files", EID, timestamp), { recursive: true });
+				await fs.writeFile(path.join("/bundle", "files", filePath), combinedBlob);
+				console.log("文件保存成功:", filePath);
+			} catch (e) {
+				console.error("保存文件时出错:", e);
+			}
 			return new Response(combinedBlob, {
 				headers: {
 					'Content-Type': getMIMEType(filename) || 'application/octet-stream',
