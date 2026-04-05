@@ -33,22 +33,22 @@ export default {
 				}
 			});
 			if (!EID) {
-				server.send({
+				server.send(JSON.stringify({
 					code: 400,
 					bcode: 10102,
 					msg: "缺少设备ID",
 					timestamp: Date.now()
-				});
+				}));
 				server.close();
 				return;
 			}
 			console.log("连接成功:", EID);
-			server.send({
+			server.send(JSON.stringify({
 				code: 200,
 				bcode: 10100,
 				msg: "连接成功",
 				timestamp: Date.now()
-			});
+			}));
 			return new Response(null, {
 				status: 101,
 				webSocket: client,
