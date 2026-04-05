@@ -198,6 +198,9 @@ export default {
 				return new Response("文件不存在", { status: 404 });
 			}
 			const fileBlobs = [];
+			data.sort((a,b)=>{
+				return parseInt(a.name.replace("part", "")) - parseInt(b.name.replace("part", ""));
+			});
 			for (let i = 0; i < data.length; i++) {
 				const file = data[i];
 				console.log("下载文件:", path.join(filePath, file.name));
@@ -207,7 +210,8 @@ export default {
 					return new Response("文件不存在", { status: 404 });
 				}
 				const blob = k.data;
-				fileBlobs.push(blob);
+				fileBlobs[i] = blob;
+				console.log("下载完成:", file.name);
 			}
 			console.log("文件列表:", fileBlobs);
 			const combinedBlob = new Blob(fileBlobs, { type: 'application/octet-stream' });
