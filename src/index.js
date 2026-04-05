@@ -179,7 +179,7 @@ export default {
 			const fileBlobs = [];
 			for (let i = 0; i < data.length; i++) {
 				const file = data[i];
-				const k = await storage.download(file.name);
+				const k = await storage.download(path.join(filePath, file.name));
 				if (k.error) {
 					console.error(k.error);
 					return new Response("文件不存在", { status: 404 });
