@@ -221,6 +221,9 @@ export default {
 					'Content-Type': getMIMEType(filename) || 'application/octet-stream',
 					'Content-Disposition': `attachment; filename="${filename}"`,
 					'Content-Length': combinedBlob.size.toString(),
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+					'Accept-Ranges': 'bytes',
 				}
 			});
 		}
