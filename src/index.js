@@ -147,6 +147,10 @@ export default {
 				}));
 				return server.close();
 			}
+			return new Response(null, {
+				status: 101,
+				webSocket: client,
+			});
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
