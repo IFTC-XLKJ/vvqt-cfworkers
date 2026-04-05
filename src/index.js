@@ -10,6 +10,11 @@
 
 import { createClient } from "@supabase/supabase-js";
 
+const SUPABASE_URL = "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY";
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const database = supabase.from("qtfile");
+
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
@@ -50,6 +55,28 @@ export default {
 				server.close();
 				return;
 			}
+			const d = await database
+				.select('*')
+				.eq('eid', EID);
+			console.log(d);
+			if (d.data.length == 0) {
+				const d2 = await database
+					.insert([{
+						eid: EID,
+						connects: {}
+					}])
+					.select();
+				if (d2.status != 201) {
+					console.log(d2);
+					socket.send(JSON.stringify({
+						code: 500,
+						bcode: 10101,
+						msg: '服务内部错误',
+						timestamp: Date.now()
+					}));
+					return socket.close();
+				}
+			}
 			console.log("连接成功:", EID);
 			server.send(JSON.stringify({
 				code: 200,
@@ -57,6 +84,14 @@ export default {
 				msg: "连接成功",
 				timestamp: Date.now()
 			}));
+			server.addEventListener('close', async () => {
+				const d = await database
+					.delete()
+					.eq('eid', EID)
+					.select();
+				console.log('删除记录', d);
+				console.log("设备断开连接:", EID);
+			});
 			return new Response(null, {
 				status: 101,
 				webSocket: client,
