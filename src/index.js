@@ -189,8 +189,8 @@ export default {
 			}
 			const data = j.data;
 			console.log("文件列表:", data);
-			if (data.length > 5) {
-				return new Response("文件太大，无法下载预览", { status: 400 });
+			if (data.length > 10) {
+				return new Response("文件超过100MB，无法下载预览", { status: 400 });
 			}
 			if (data.length == 0) {
 				return new Response("文件不存在", { status: 404 });
