@@ -157,6 +157,9 @@ export default {
 			const EID = pathnames[2];
 			const timestamp = pathnames[3];
 			const filename = pathnames[4];
+			if (!EID || !timestamp || !filename) {
+				return new Response("缺少参数", { status: 400 });
+			}
 			const filePath = path.join(EID, timestamp, filename);
 			console.log("下载文件:", filePath);
 		}
