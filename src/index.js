@@ -179,8 +179,8 @@ export default {
 				return new Response("缺少参数", { status: 400 });
 			}
 			const filePath = path.join(EID, timestamp, filename);
-			if (await isFileExists(path.join("/bundle", "files", filePath))) {
-				const fileBlob = await fs.readFile(path.join("/bundle", "files", filePath));
+			if (await isFileExists(path.join("/tmp", "files", filePath))) {
+				const fileBlob = await fs.readFile(path.join("/tmp", "files", filePath));
 				return new Response(fileBlob, {
 					headers: {
 						'Content-Type': getMIMEType(filename) || 'application/octet-stream',
@@ -230,8 +230,8 @@ export default {
 			console.log("MIME类型:", getMIMEType(filename));
 			const combinedBlob = new Blob(fileBlobs, { type: getMIMEType(filename) || 'application/octet-stream' });
 			try {
-				await fs.mkdir(path.join("/bundle", "files", EID, timestamp), { recursive: true });
-				await fs.writeFile(path.join("/bundle", "files", filePath), combinedBlob);
+				await fs.mkdir(path.join("/tmp", "files", EID, timestamp), { recursive: true });
+				await fs.writeFile(path.join("/tmp", "files", filePath), combinedBlob);
 				console.log("文件保存成功:", filePath);
 			} catch (e) {
 				console.error("保存文件时出错:", e);
