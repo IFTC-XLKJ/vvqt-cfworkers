@@ -24,8 +24,14 @@ export default {
 			const [client, server] = Object.values(webSocketPair);
 			server.accept();
 			const EID = pathnames[2];
-			// server.addEventListener('open', (event) => {
-			// });
+			server.addEventListener('message', (event) => {
+				try {
+					const data = JSON.parse(event.data);
+					console.log("收到消息:", event.data);
+				} catch (e) {
+					console.log("消息解析失败:", event.data);
+				}
+			});
 			if (!EID) {
 				server.send({
 					code: 400,
