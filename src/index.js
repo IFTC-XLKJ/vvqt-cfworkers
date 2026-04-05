@@ -141,7 +141,7 @@ export default {
 			if (!connects[EID]) {
 				server.send(JSON.stringify({
 					code: 400,
-					bcode: 10101,
+					bcode: 10104,
 					msg: "目标设备未连接",
 					timestamp: Date.now()
 				}));
