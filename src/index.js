@@ -45,6 +45,14 @@ export default {
 					console.error("错误的消息:", event.data);
 				}
 			});
+			server.addEventListener('close', async () => {
+				const d = await database
+					.delete()
+					.eq('eid', EID)
+					.select();
+				console.log('删除记录', d);
+				console.log("设备断开连接:", EID);
+			});
 			if (!EID) {
 				server.send(JSON.stringify({
 					code: 400,
@@ -84,14 +92,6 @@ export default {
 				msg: "连接成功",
 				timestamp: Date.now()
 			}));
-			server.addEventListener('close', async () => {
-				const d = await database
-					.delete()
-					.eq('eid', EID)
-					.select();
-				console.log('删除记录', d);
-				console.log("设备断开连接:", EID);
-			});
 			return new Response(null, {
 				status: 101,
 				webSocket: client,
