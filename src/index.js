@@ -14,6 +14,7 @@ export default {
 		const pathname = url.pathname;
 		const method = request.method;
 		const pathnames = pathname.split('/');
+		const upgradeHeader = request.headers.get('Upgrade');
 		console.log("收到请求:", method, pathname);
 	},
 };
