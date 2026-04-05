@@ -20,6 +20,13 @@ export default {
 			if (!upgradeHeader || upgradeHeader !== 'websocket') {
 				return new Response('Expected Upgrade: websocket', { status: 426 });
 			}
+			const webSocketPair = new WebSocketPair();
+			const [client, server] = webSocketPair;
+			const EID = pathnames[2];
+			return new Response(null, {
+				status: 101,
+				webSocket: client,
+			});
 		}
 	},
 };
