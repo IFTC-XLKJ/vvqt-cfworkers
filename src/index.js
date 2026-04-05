@@ -259,7 +259,7 @@ export default {
 	async scheduled(event, env, ctx) {
 		console.log("定时任务触发:", event.cron);
 		try {
-			await cleanExpiredRecords(env);
+			cleanExpiredCache(env);
 		} catch (error) {
 			console.error("定时任务执行失败:", error);
 		}
