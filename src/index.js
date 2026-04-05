@@ -16,5 +16,10 @@ export default {
 		const pathnames = pathname.split('/');
 		const upgradeHeader = request.headers.get('Upgrade');
 		console.log("收到请求:", method, pathname);
+		if (pathnames[1] == "equipment") {
+			if (!upgradeHeader || upgradeHeader !== 'websocket') {
+				return new Response('Expected Upgrade: websocket', { status: 426 });
+			}
+		}
 	},
 };
