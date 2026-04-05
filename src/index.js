@@ -158,6 +158,7 @@ export default {
 			const timestamp = pathnames[3];
 			const filename = pathnames[4];
 			const filePath = path.join(EID, timestamp, filename);
+			console.log("下载文件:", filePath);
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
