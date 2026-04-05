@@ -257,41 +257,14 @@ export default {
 		return new Response("404 Not Found", { status: 404 });
 	},
 	async scheduled(event, env, ctx) {
-		console.log(`每小时定时任务触发: ${event.cron}`);
-		// 执行你的清理或同步逻辑
-		ctx.waitUntil(handleScheduledTask(env));
+		console.log("定时任务触发:", event.cron);
+		try {
+			await cleanExpiredRecords(env);
+		} catch (error) {
+			console.error("定时任务执行失败:", error);
+		}
 	},
 };
-
-async function handleScheduledTask(env) {
-	try {
-		console.log("开始执行定时清理任务...");
-		
-		// 示例：清理 Supabase 中的过期数据
-		// 注意：建议将密钥放入 wrangler.jsonc 的 "vars" 或使用 secrets，不要硬编码
-		const supabaseUrl = env.SUPABASE_URL || "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn";
-		const supabaseKey = env.SUPABASE_ANON_KEY || "eyJhbG..."; // 建议使用 secrets
-		
-		const supabase = createClient(supabaseUrl, supabaseKey);
-		
-		// 假设你要删除 created_at 超过 1 小时的记录
-		const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
-		
-		const { error } = await supabase
-			.from('qtfile')
-			.delete()
-			.lt('created_at', oneHourAgo); // 确保你的表中有时间戳字段
-
-		if (error) {
-			console.error("定时任务执行错误:", error);
-		} else {
-			console.log("定时任务执行成功");
-		}
-		
-	} catch (e) {
-		console.error("定时任务异常:", e);
-	}
-}
 
 function genUUID() {
 	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
