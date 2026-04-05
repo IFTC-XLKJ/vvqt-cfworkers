@@ -8,6 +8,8 @@
  * Learn more at https://developers.cloudflare.com/workers/
  */
 
+import { createClient } from "@supabase/supabase-js";
+
 export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
