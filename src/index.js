@@ -70,7 +70,12 @@ export default {
 									code: 200,
 									bcode: 10103,
 									msg: "接收文件",
-									data: {},
+									data: {
+									  name,
+									  path,
+									  size,
+									  part
+									},
 								}));
 							}
 						}
