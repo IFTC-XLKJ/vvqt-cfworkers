@@ -41,7 +41,7 @@
   {
     "durable_objects": {
       "bindings": [{
-        "name": "device_room",
+        "name": "DEVICE_ROOM",
         "class_name": "DeviceRoom"
       }]
     }
