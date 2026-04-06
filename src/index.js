@@ -21,10 +21,6 @@ const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const database = supabase.from("qtfile");
 const storage = supabase.storage.from("qtfiles");
 
-const openai = new OpenAI({
-	apiKey: process.env.CLOUDFLARE_API_KEY,
-	baseURL: `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/ai/v1`,
-});
 
 const fileCache = {};
 const connects = {};
@@ -40,6 +36,10 @@ function cleanExpiredCache() {
 
 export default {
 	async fetch(request, env, ctx) {
+		const openai = new OpenAI({
+			apiKey: env.CLOUDFLARE_API_KEY,
+			baseURL: `https://api.cloudflare.com/client/v4/accounts/${env.CLOUDFLARE_ACCOUNT_ID}/ai/v1`,
+		});
 		const url = new URL(request.url);
 		const pathname = url.pathname;
 		const method = request.method;
