@@ -317,7 +317,8 @@ export default {
 				if (!AI) {
 					return new Response("AI 模块未配置", { status: 500 });
 				}
-				A
+				AI.run(request, env, ctx);
+				return new Response("AI 请求已转发", { status: 200 });
 			}
 			return new Response("404 Not Found", { status: 404 });
 		} catch (e) {
