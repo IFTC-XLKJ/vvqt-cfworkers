@@ -9,6 +9,9 @@ export class DeviceRoom {
 
   // 处理 WebSocket 连接
   async fetch(request) {
+      const pathname = url.pathname;
+      const method = request.method;
+      const pathnames = pathname.split('/');
     const upgradeHeader = request.headers.get("Upgrade");
     if (!upgradeHeader || upgradeHeader !== "websocket") {
       return new Response("Expected Upgrade: websocket", {
@@ -24,7 +27,7 @@ export class DeviceRoom {
 
     // 将连接存入 Durable Object 的内存中（这是安全的，因为 DO 是有状态的）
     const url = new URL(request.url);
-    const EID = url.searchParams.get("eid");
+    const EID = pathnames[2];
     this.connections.set(EID, server);
 
     // 监听消息
