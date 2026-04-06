@@ -263,18 +263,23 @@ export default {
 					return new Response("缺少设备ID", { status: 400 });
 				}
 				const searchParams = url.searchParams;
-				const page = parseInt(searchParams.get("page") || "1");
 
-				// 限制 pageSize 的最大值，防止过度查询
+				// 1. 处理分页参数
+				let page = parseInt(searchParams.get("page") || "1");
 				let pageSize = parseInt(searchParams.get("pageSize") || "100");
-				const MAX_PAGE_SIZE = 100; // 定义最大每页数量
+				const MAX_PAGE_SIZE = 100;
+
+				// 校验 page
+				if (isNaN(page) || page < 1) {
+					page = 1;
+				}
+				// 校验 pageSize
 				if (isNaN(pageSize) || pageSize < 1) {
-					pageSize = 10; // 默认值
+					pageSize = 10;
 				} else if (pageSize > MAX_PAGE_SIZE) {
-					pageSize = MAX_PAGE_SIZE; // 强制截断为最大值
+					pageSize = MAX_PAGE_SIZE;
 				}
 
-				// 构建子路径
 				let subPath = pathnames.slice(3).join('/');
 				if (subPath && !subPath.endsWith('/')) {
 					subPath += '/';
@@ -282,9 +287,11 @@ export default {
 				const prefix = EID + (subPath ? '/' + subPath : '');
 
 				try {
-					// 1. 获取当前目录下的所有条目（可能是时间戳文件夹）
+					// 注意：为了准确分页，通常需要先获取足够多的数据或者全量数据（如果数据量不大）
+					// 这里暂时保持 limit: 1000 或更大，以确保前端分页体验，或者你可以选择移除 limit 获取全部
+					// 如果数据量极大，建议后端只返回当前页所需的目录名，但那样无法准确知道 total
 					const { data: listData, error: listError } = await storage.list(prefix, {
-						limit: pageSize,
+						limit: 1000, // 增加限制以支持分页计算 total，或者根据业务调整
 						offset: 0,
 						search: '',
 					});
@@ -298,9 +305,9 @@ export default {
 					}
 
 					// 过滤掉空占位符和无效数据
-					const items = (listData || []).filter(item => item.name !== '.emptyFolderPlaceholder');
+					let items = (listData || []).filter(item => item.name !== '.emptyFolderPlaceholder');
 
-					// 2. 倒序排列 (假设文件名/文件夹名包含时间戳或可比较字符串)
+					// 2. 倒序排列
 					items.sort((a, b) => {
 						const numA = parseInt(a.name.replace(/[^0-9]/g, ''));
 						const numB = parseInt(b.name.replace(/[^0-9]/g, ''));
@@ -311,11 +318,19 @@ export default {
 						return b.name.localeCompare(a.name); // 字符串倒序
 					});
 
+					// 3. 计算分页切片
+					const total = items.length;
+					const start = (page - 1) * pageSize;
+					const end = start + pageSize;
+
+					// 截取当前页的数据
+					const currentPageItems = items.slice(start, end);
+
 					const files = [];
 
-					// 3. 遍历获取下一级目录下的第一个文件
-					for (let i = 0; i < items.length; i++) {
-						const item = items[i];
+					// 4. 遍历当前页的条目，获取下一级目录下的第一个文件
+					for (let i = 0; i < currentPageItems.length; i++) {
+						const item = currentPageItems[i];
 						const itemPath = path.join(prefix, item.name);
 
 						try {
@@ -350,8 +365,8 @@ export default {
 						code: 200,
 						data: files,
 						page,
-						pageSize, // 返回实际使用的 pageSize
-						total: items.length
+						pageSize,
+						total: total // 返回总记录数，方便前端计算总页数
 					}), {
 						status: 200,
 						headers: { 'Content-Type': 'application/json' }
