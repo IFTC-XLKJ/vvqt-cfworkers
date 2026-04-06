@@ -264,66 +264,99 @@ export default {
 				}
 				const searchParams = url.searchParams;
 				const page = parseInt(searchParams.get("page") || "1");
-				const pageSize = parseInt(searchParams.get("pageSize") || "100");
+
+				// 限制 pageSize 的最大值，防止过度查询
+				let pageSize = parseInt(searchParams.get("pageSize") || "100");
+				const MAX_PAGE_SIZE = 100; // 定义最大每页数量
+				if (isNaN(pageSize) || pageSize < 1) {
+					pageSize = 10; // 默认值
+				} else if (pageSize > MAX_PAGE_SIZE) {
+					pageSize = MAX_PAGE_SIZE; // 强制截断为最大值
+				}
+
+				// 构建子路径
 				let subPath = pathnames.slice(3).join('/');
 				if (subPath && !subPath.endsWith('/')) {
 					subPath += '/';
 				}
 				const prefix = EID + (subPath ? '/' + subPath : '');
+
 				try {
-					const { data, error } = await storage.list(prefix, {
+					// 1. 获取当前目录下的所有条目（可能是时间戳文件夹）
+					const { data: listData, error: listError } = await storage.list(prefix, {
 						limit: pageSize,
 						offset: 0,
 						search: '',
 					});
-					if (error) {
-						console.error("列出文件失败:", error);
+
+					if (listError) {
+						console.error("列出文件失败:", listError);
 						return new Response(JSON.stringify({ code: 500, msg: "列出文件失败" }), {
 							status: 500,
 							headers: { 'Content-Type': 'application/json' }
 						});
 					}
-					const formattedData = (data || []).map(item => {
-						const cleanName = item.name.replace(/\/$/, '');
-						if (cleanName === '.emptyFolderPlaceholder') {
-							return null;
+
+					// 过滤掉空占位符和无效数据
+					const items = (listData || []).filter(item => item.name !== '.emptyFolderPlaceholder');
+
+					// 2. 倒序排列 (假设文件名/文件夹名包含时间戳或可比较字符串)
+					items.sort((a, b) => {
+						const numA = parseInt(a.name.replace(/[^0-9]/g, ''));
+						const numB = parseInt(b.name.replace(/[^0-9]/g, ''));
+
+						if (!isNaN(numA) && !isNaN(numB)) {
+							return numB - numA; // 数字倒序
 						}
-						return cleanName;
-					}).filter(item => item !== null);
-					formattedData.sort((a, b) => {
-						return parseInt(a) - parseInt(b);
+						return b.name.localeCompare(a.name); // 字符串倒序
 					});
+
 					const files = [];
-					for (let i = 0; i < formattedData.length; i++) {
-						const j = await storage
-							.list(path.join(prefix, formattedData[i]), {
+
+					// 3. 遍历获取下一级目录下的第一个文件
+					for (let i = 0; i < items.length; i++) {
+						const item = items[i];
+						const itemPath = path.join(prefix, item.name);
+
+						try {
+							const { data: subList, error: subError } = await storage.list(itemPath, {
 								limit: 1,
 								offset: 0,
 							});
-						if (j.error) {
-							console.error(j.error);
-							return new Response("查询出错：" + j.error.message, { status: 500 });
+
+							if (subError) {
+								console.warn(`查询子目录 ${itemPath} 失败:`, subError);
+								continue;
+							}
+
+							if (subList && subList.length > 0) {
+								const firstFile = subList[0];
+								files.push({
+									name: firstFile.name,
+									parentName: item.name,
+									path: path.join(itemPath, firstFile.name),
+									size: firstFile.metadata?.size || 0,
+									timestamp: parseInt(item.name) || 0,
+								});
+							}
+						} catch (err) {
+							console.error(`处理项 ${item.name} 时发生异常:`, err);
 						}
-						const data = j.data[0];
-						if (!data) continue;
-						console.log("查询文件:", path.join(prefix, formattedData[i]), data);
-						files.push({
-							name: data.name,
-							timestamp: parseInt(formattedData[i]) || 0,
-						});
 					}
-					console.log("文件列表:", JSON.stringify(files, null, 4));
+
+					console.log("文件列表处理完成:", JSON.stringify(files, null, 2));
+
 					return new Response(JSON.stringify({
 						code: 200,
-						// data: formattedData,
 						data: files,
 						page,
-						pageSize,
-						total: formattedData.length
+						pageSize, // 返回实际使用的 pageSize
+						total: items.length
 					}), {
 						status: 200,
 						headers: { 'Content-Type': 'application/json' }
 					});
+
 				} catch (e) {
 					console.error("列出文件异常:", e);
 					return new Response(JSON.stringify({ code: 500, msg: "服务器内部错误" }), {
