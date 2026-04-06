@@ -264,7 +264,7 @@ export default {
 				}
 				const searchParams = url.searchParams;
 				const page = parseInt(searchParams.get("page") || "1");
-				const pageSize = parseInt(searchParams.get("pageSize") || "100"); // 建议增大 pageSize，因为 list API 不支持 offset 分页
+				const pageSize = parseInt(searchParams.get("pageSize") || "100");
 				let subPath = pathnames.slice(3).join('/');
 				if (subPath && !subPath.endsWith('/')) {
 					subPath += '/';
