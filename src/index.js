@@ -63,6 +63,7 @@ export default {
 							const { name, path, size, part } = data;
 							console.log("上传文件:", name, path, size, part);
 							const currentConnects = Object.keys(connects[EID]);
+							console.log("当前连接数:", currentConnects.length);
 							for (let i = 0; i < currentConnects.length; i++) {
 								const connect = connects[EID][currentConnects[i]];
 								connect.socket.send(JSON.stringify({
