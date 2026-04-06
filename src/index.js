@@ -291,7 +291,7 @@ export default {
 					// 这里暂时保持 limit: 1000 或更大，以确保前端分页体验，或者你可以选择移除 limit 获取全部
 					// 如果数据量极大，建议后端只返回当前页所需的目录名，但那样无法准确知道 total
 					const { data: listData, error: listError } = await storage.list(prefix, {
-						limit: 1000, // 增加限制以支持分页计算 total，或者根据业务调整
+						limit: 1024, // 增加限制以支持分页计算 total，或者根据业务调整
 						offset: 0,
 						search: '',
 					});
