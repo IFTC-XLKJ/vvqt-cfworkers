@@ -309,6 +309,12 @@ export default {
 				});
 			}
 		}
+		if (pathnames[1] == "ai") {
+			const AI = env.AI;
+			if (!AI) {
+				return new Response("AI 模块未配置", { status: 500 });
+			}
+		}
 		return new Response("404 Not Found", { status: 404 });
 	},
 	async scheduled(event, env, ctx) {
