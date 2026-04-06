@@ -284,7 +284,6 @@ export default {
 						});
 					}
 					const formattedData = (data || []).map(item => {
-						const isDir = item.name.endsWith('/') || !item.id;
 						const cleanName = item.name.replace(/\/$/, '');
 						if (cleanName === '.emptyFolderPlaceholder') {
 							return null;
@@ -294,9 +293,25 @@ export default {
 					formattedData.sort((a, b) => {
 						return parseInt(a) - parseInt(b);
 					});
+					const files = [];
+					for (let i = 0; i < formattedData.length; i++) {
+						const j = await storage
+							.list(path.join(prefix, formattedData[i]), {
+								limit: 1,
+								offset: 0,
+							});
+						if (j.error) {
+							console.error(j.error);
+							return new Response("查询出错：" + j.error.message, { status: 500 });
+						}
+						const data = j.data[0];
+						if (!data) continue;
+						files.push(data.name);
+					}
 					return new Response(JSON.stringify({
 						code: 200,
-						data: formattedData,
+						// data: formattedData,
+						data: files,
 						page,
 						pageSize,
 						total: formattedData.length
