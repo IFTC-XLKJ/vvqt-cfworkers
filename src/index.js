@@ -48,8 +48,6 @@ export default {
         // 获取或创建 Durable Object 的 ID (基于 EID 或 Room ID)
         const id = env.DEVICE_ROOM.idFromName("GLOBAL_ROOM");
         const stub = env.DEVICE_ROOM.get(id);
-
-        // 将请求直接转发给 Durable Object 处理
         return stub.fetch(request);
       }
       if (pathnames[1] == "equipment") {
