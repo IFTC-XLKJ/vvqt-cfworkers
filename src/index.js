@@ -309,7 +309,7 @@ export default {
 						console.log("查询文件:", path.join(prefix, formattedData[i]), data);
 						files.push({
 							name: data.name,
-							timestamp: formattedData[i],
+							timestamp: parseInt(formattedData[i]) || 0,
 						});
 					}
 					console.log("文件列表:", JSON.stringify(files, null, 4));
