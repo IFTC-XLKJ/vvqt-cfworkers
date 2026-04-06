@@ -66,6 +66,7 @@ export default {
 							console.log("当前连接数:", currentConnects.length);
 							for (let i = 0; i < currentConnects.length; i++) {
 								const connect = connects[EID][currentConnects[i]];
+								console.log('连接的UUID', currentConnects[i]);
 								connect.socket.send(JSON.stringify({
 									code: 200,
 									bcode: 10103,
