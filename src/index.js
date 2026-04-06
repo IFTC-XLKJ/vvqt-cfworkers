@@ -15,6 +15,7 @@ import path from "path";
 import fs from "fs/promises";
 import mime from "mime";
 import * as process from "node:process";
+import DevideRoom from "./DevideRoom.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
