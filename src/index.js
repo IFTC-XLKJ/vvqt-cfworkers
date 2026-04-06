@@ -255,12 +255,50 @@ export default {
 			});
 		}
 		if (pathnames[1] == "listfile") {
-		  const EID = pathnames[2];
-		  if (!EID) {
-		    return new Response("缺少设备ID", {
-		      status: 400
-		    });
-		  }
+			const EID = pathnames[2];
+			if (!EID) {
+				return new Response("缺少设备ID", {
+					status: 400
+				});
+			}
+			const searchParams = url.searchParams;
+			const page = parseInt(searchParams.get("page") || "1");
+			const pageSize = parseInt(searchParams.get("pageSize") || "10");
+			const from = (page - 1) * pageSize;
+			const to = from + pageSize - 1;
+			const { data, error, count } = await database
+				.select('*', { count: 'exact' }) // 获取总数用于前端分页
+				.eq('bucket_id', 'qtfiles')      // 指定 Bucket 名称
+				.like('name', `${EID}/%`)        // 模拟文件夹过滤 (name 字段存储完整路径)
+				.order('updated_at', { ascending: false }) // 【关键】服务端按更新时间倒序
+				.range(from, to);                // 【关键】服务端分页
+
+			if (error) {
+				console.error("查询文件列表失败:", error);
+				return new Response(JSON.stringify({ code: 500, msg: "服务器内部错误" }), {
+					status: 500,
+					headers: { 'Content-Type': 'application/json' }
+				});
+			}
+			const formattedData = data.map(item => ({
+				name: item.name.replace(`${EID}/`, ''), // 去除前缀，只保留文件名/相对路径
+				id: item.id,
+				updated_at: item.updated_at,
+				created_at: item.created_at,
+				metadata: item.metadata,
+				size: item.metadata?.size || 0
+			}));
+
+			return new Response(JSON.stringify({
+				code: 200,
+				data: formattedData,
+				page,
+				pageSize,
+				total: count
+			}), {
+				status: 200,
+				headers: { 'Content-Type': 'application/json' }
+			});
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
