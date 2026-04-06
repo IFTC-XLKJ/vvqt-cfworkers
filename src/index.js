@@ -257,47 +257,72 @@ export default {
 		if (pathnames[1] == "listfile") {
 			const EID = pathnames[2];
 			if (!EID) {
-				return new Response("缺少设备ID", {
-					status: 400
-				});
+				return new Response("缺少设备ID", { status: 400 });
 			}
+
 			const searchParams = url.searchParams;
 			const page = parseInt(searchParams.get("page") || "1");
-			const pageSize = parseInt(searchParams.get("pageSize") || "10");
-			const from = (page - 1) * pageSize;
-			const to = from + pageSize - 1;
-			const { data, error, count } = await storage
-				.select('*', { count: 'exact' })
-				.eq('bucket_id', 'qtfiles')
-				.like('name', `${EID}/%`)
-				.order('updated_at', { ascending: false })
-				.range(from, to);
-			if (error) {
-				console.error("查询文件列表失败:", error);
+			const pageSize = parseInt(searchParams.get("pageSize") || "100"); // 建议增大 pageSize，因为 list API 不支持 offset 分页
+			
+			// 获取可选的子路径参数，例如 /listfile/EID/subfolder/
+			let subPath = pathnames.slice(3).join('/');
+			if (subPath && !subPath.endsWith('/')) {
+				subPath += '/';
+			}
+			
+			const prefix = EID + (subPath ? '/' + subPath : '');
+
+			try {
+				const { data, error } = await storage.list(prefix, {
+					limit: pageSize,
+					offset: 0,
+					search: '', 
+				});
+
+				if (error) {
+					console.error("列出文件失败:", error);
+					return new Response(JSON.stringify({ code: 500, msg: "列出文件失败" }), {
+						status: 500,
+						headers: { 'Content-Type': 'application/json' }
+					});
+				}
+
+				// 格式化数据，区分文件和文件夹，并过滤掉 .emptyFolderPlaceholder
+				const formattedData = (data || []).map(item => {
+					const isDir = item.name.endsWith('/') || !item.id;
+					const cleanName = item.name.replace(/\/$/, '');
+					
+					// 过滤掉 .emptyFolderPlaceholder 占位符文件
+					if (cleanName === '.emptyFolderPlaceholder') {
+						return null; // 返回 null 表示此条目应被忽略
+					}
+
+					return cleanName;
+				}).filter(item => item !== null); // 使用 filter 移除所有为 null 的项
+
+				// 排序
+				formattedData.sort((a, b) => {
+					return parseInt(a) - parseInt(b);
+				});
+
+				return new Response(JSON.stringify({
+					code: 200,
+					data: formattedData,
+					page,
+					pageSize,
+					total: formattedData.length
+				}), {
+					status: 200,
+					headers: { 'Content-Type': 'application/json' }
+				});
+
+			} catch (e) {
+				console.error("列出文件异常:", e);
 				return new Response(JSON.stringify({ code: 500, msg: "服务器内部错误" }), {
 					status: 500,
 					headers: { 'Content-Type': 'application/json' }
 				});
 			}
-			const formattedData = data.map(item => ({
-				name: item.name.replace(`${EID}/`, ''),
-				id: item.id,
-				updated_at: item.updated_at,
-				created_at: item.created_at,
-				metadata: item.metadata,
-				size: item.metadata?.size || 0
-			}));
-
-			return new Response(JSON.stringify({
-				code: 200,
-				data: formattedData,
-				page,
-				pageSize,
-				total: count
-			}), {
-				status: 200,
-				headers: { 'Content-Type': 'application/json' }
-			});
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
