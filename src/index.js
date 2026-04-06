@@ -306,7 +306,10 @@ export default {
 						}
 						const data = j.data[0];
 						if (!data) continue;
-						files.push(data.name);
+						files.push({
+							name: data.name,
+							timestamp: formattedData[i],
+						});
 					}
 					return new Response(JSON.stringify({
 						code: 200,
