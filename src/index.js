@@ -13,12 +13,18 @@ import path from "path";
 import fs from "fs/promises";
 import mime from "mime";
 import * as process from "node:process";
+import OpenAI from "openai";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 const database = supabase.from("qtfile");
 const storage = supabase.storage.from("qtfiles");
+
+const openai = new OpenAI({
+	apiKey: process.env.CLOUDFLARE_API_KEY,
+	baseURL: `https://api.cloudflare.com/client/v4/accounts/${process.env.CLOUDFLARE_ACCOUNT_ID}/ai/v1`,
+});
 
 const fileCache = {};
 const connects = {};
@@ -314,6 +320,7 @@ export default {
 			if (!AI) {
 				return new Response("AI 模块未配置", { status: 500 });
 			}
+			A
 		}
 		return new Response("404 Not Found", { status: 404 });
 	},
