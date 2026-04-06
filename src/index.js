@@ -259,26 +259,20 @@ export default {
 			if (!EID) {
 				return new Response("缺少设备ID", { status: 400 });
 			}
-
 			const searchParams = url.searchParams;
 			const page = parseInt(searchParams.get("page") || "1");
 			const pageSize = parseInt(searchParams.get("pageSize") || "100"); // 建议增大 pageSize，因为 list API 不支持 offset 分页
-			
-			// 获取可选的子路径参数，例如 /listfile/EID/subfolder/
 			let subPath = pathnames.slice(3).join('/');
 			if (subPath && !subPath.endsWith('/')) {
 				subPath += '/';
 			}
-			
 			const prefix = EID + (subPath ? '/' + subPath : '');
-
 			try {
 				const { data, error } = await storage.list(prefix, {
 					limit: pageSize,
 					offset: 0,
-					search: '', 
+					search: '',
 				});
-
 				if (error) {
 					console.error("列出文件失败:", error);
 					return new Response(JSON.stringify({ code: 500, msg: "列出文件失败" }), {
@@ -286,25 +280,17 @@ export default {
 						headers: { 'Content-Type': 'application/json' }
 					});
 				}
-
-				// 格式化数据，区分文件和文件夹，并过滤掉 .emptyFolderPlaceholder
 				const formattedData = (data || []).map(item => {
 					const isDir = item.name.endsWith('/') || !item.id;
 					const cleanName = item.name.replace(/\/$/, '');
-					
-					// 过滤掉 .emptyFolderPlaceholder 占位符文件
 					if (cleanName === '.emptyFolderPlaceholder') {
-						return null; // 返回 null 表示此条目应被忽略
+						return null;
 					}
-
 					return cleanName;
-				}).filter(item => item !== null); // 使用 filter 移除所有为 null 的项
-
-				// 排序
+				}).filter(item => item !== null);
 				formattedData.sort((a, b) => {
 					return parseInt(a) - parseInt(b);
 				});
-
 				return new Response(JSON.stringify({
 					code: 200,
 					data: formattedData,
@@ -315,7 +301,6 @@ export default {
 					status: 200,
 					headers: { 'Content-Type': 'application/json' }
 				});
-
 			} catch (e) {
 				console.error("列出文件异常:", e);
 				return new Response(JSON.stringify({ code: 500, msg: "服务器内部错误" }), {
