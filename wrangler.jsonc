@@ -38,13 +38,11 @@
   "ai": {
     "binding": "AI"
   },
-  {
-    "durable_objects": {
-      "bindings": [{
-        "name": "DEVICE_ROOM",
-        "class_name": "DeviceRoom"
-      }]
-    }
+  "durable_objects": {
+    "bindings": [{
+      "name": "DEVICE_ROOM",
+      "class_name": "DeviceRoom"
+    }]
   },
   /**
 	 * Environment Variables
