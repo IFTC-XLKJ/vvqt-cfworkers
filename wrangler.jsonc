@@ -44,23 +44,23 @@
       "class_name": "DeviceRoom"
     }]
   },
-  "migrations": [ {
-    "tag": "v 1",
+  "migrations": [{
+    "tag": "v1",
     "new_classes": ["DeviceRoom"]
-  },
-    /**
+  }],
+  /**
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
 	 * Note: Use secrets to store sensitive data.
 	 * https://developers.cloudflare.com/workers/configuration/secrets/
 	 */
-    "vars": {
-      "SUPABASE_URL": "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn",
-      "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY"
-    }
-    /**
+  "vars": {
+    "SUPABASE_URL": "https://dbmp-xbgmorqeur6oh81z.database.nocode.cn",
+    "SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlzcyI6InN1cGFiYXNlIiwiaWF0IjoxNzQ2OTc5MjAwLCJleHAiOjE5MDQ3NDU2MDB9.11QbQ5OW_m10vblDXAlw1Qq7Dve5Swzn12ILo7-9IXY"
+  }
+  /**
 	 * Service Bindings (communicate between multiple Workers)
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#service-bindings
 	 */
-    // "services": [  {   "binding": "MY_SERVICE",   "service": "my-service"  } ]
-  }
+  // "services": [  {   "binding": "MY_SERVICE",   "service": "my-service"  } ]
+}
