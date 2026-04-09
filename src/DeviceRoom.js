@@ -1,4 +1,4 @@
-export default class DeviceRoom extends DurableObject {
+class DeviceRoom extends DurableObject {
   constructor(state, env) {
     this.state = state;
     this.connections = new Map(); // 替代原来的 connects
@@ -9,9 +9,9 @@ export default class DeviceRoom extends DurableObject {
 
   // 处理 WebSocket 连接
   async fetch(request) {
-      const pathname = url.pathname;
-      const method = request.method;
-      const pathnames = pathname.split('/');
+    const pathname = url.pathname;
+    const method = request.method;
+    const pathnames = pathname.split('/');
     const upgradeHeader = request.headers.get("Upgrade");
     if (!upgradeHeader || upgradeHeader !== "websocket") {
       return new Response("Expected Upgrade: websocket", {
@@ -51,3 +51,7 @@ export default class DeviceRoom extends DurableObject {
       });
   }
 }
+
+export {
+  DeviceRoom
+};
