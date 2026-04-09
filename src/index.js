@@ -490,5 +490,7 @@ export default {
       return false;
     }
   }
-  
-  export DeviceRoom;
+
+  export {
+    DeviceRoom
+  };
