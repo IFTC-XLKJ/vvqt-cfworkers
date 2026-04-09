@@ -46,6 +46,7 @@ export default {
       const upgradeHeader = request.headers.get('Upgrade');
       console.log("收到请求:", method, pathname);
       if (pathnames[1] == "equipment" || pathnames[1] == "connect") {
+        console.log(env.DEVICE_ROOM)
         // 获取或创建 Durable Object 的 ID (基于 EID 或 Room ID)
         const id = env.DEVICE_ROOM.idFromName("GLOBAL_ROOM");
         const stub = env.DEVICE_ROOM.get(id);
