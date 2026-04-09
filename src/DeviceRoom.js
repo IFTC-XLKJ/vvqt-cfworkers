@@ -13,6 +13,7 @@ class DeviceRoom {
     const method = request.method;
     const pathnames = pathname.split('/');
     const upgradeHeader = request.headers.get("Upgrade");
+    console.log('请求', request)
     if (!upgradeHeader || upgradeHeader !== "websocket") {
       return new Response("Expected Upgrade: websocket", {
         status: 426
