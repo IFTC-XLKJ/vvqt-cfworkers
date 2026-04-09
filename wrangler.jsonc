@@ -46,7 +46,7 @@
   },
   "migrations": [{
     "tag": "v1",
-    "new_classes": ["DeviceRoom"]
+    "new_sqlite_classes": ["DeviceRoom"]
   }],
   /**
 	 * Environment Variables
