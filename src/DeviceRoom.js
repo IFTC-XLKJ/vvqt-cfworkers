@@ -1,4 +1,4 @@
-class DeviceRoom extends DurableObject {
+class DeviceRoom {
   constructor(state, env) {
     this.state = state;
     this.connections = new Map(); // 替代原来的 connects
