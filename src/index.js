@@ -16,7 +16,7 @@ import fs from "fs/promises";
 import mime from "mime";
 import * as process from "node:process";
 import {
-  DevideRoom
+  DeviceRoom
 } from "./DeviceRoom.js";
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
