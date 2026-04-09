@@ -492,6 +492,6 @@ export default {
     }
   }
 
-  export {
+  /*export {
     DeviceRoom
-  };
+  };*/
