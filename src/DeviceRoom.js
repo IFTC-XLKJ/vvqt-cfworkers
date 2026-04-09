@@ -52,6 +52,6 @@ class DeviceRoom extends DurableObject {
   }
 }
 
-export {
+export default {
   DeviceRoom
 };
