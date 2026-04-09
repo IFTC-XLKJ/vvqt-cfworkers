@@ -470,6 +470,7 @@ export default {
       console.error("定时任务执行失败:", error);
     }
   },
+  DeviceRoom,
 };
 
   function genUUID() {
