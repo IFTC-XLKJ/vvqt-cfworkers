@@ -17,7 +17,7 @@ import mime from "mime";
 import * as process from "node:process";
 import DeviceRoom from "./DeviceRoom.js";
 
-export {
+export default {
   DeviceRoom
 };
 const SUPABASE_URL = process.env.SUPABASE_URL;
