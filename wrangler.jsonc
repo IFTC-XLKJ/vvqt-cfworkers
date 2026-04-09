@@ -47,7 +47,7 @@
   "migrations": [ {
     "tag": "v 1",
     "new_classes": ["DeviceRoom"]
-  }
+  },
     /**
 	 * Environment Variables
 	 * https://developers.cloudflare.com/workers/wrangler/configuration/#environment-variables
