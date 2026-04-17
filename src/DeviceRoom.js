@@ -26,7 +26,6 @@ class DeviceRoom {
     const pathnames = pathname.split('/');
     const upgradeHeader = request.headers.get("Upgrade");
     console.log("DO 收到请求:", method, pathname);
-    // const stub = env.DEVICE_ROOM.getByName(EID);
     if (pathname === '/') {
       return new Response('Hello World!');
     }
@@ -47,7 +46,8 @@ class DeviceRoom {
         return new Response('EID already connected', { status: 400 });
       }
       if (pathnames[1] == "equipment") return this.handleEquipmentConnection(request, EID);
-      if (pathnames[1] == "connect") return this.handleClientConnection(request, EID);
+      else if (pathnames[1] == "connect") return this.handleClientConnection(request, EID);
+      else return new Response('Invalid path', { status: 400 });
     }
 
     // const webSocketPair = new WebSocketPair();
@@ -201,10 +201,10 @@ class DeviceRoom {
 }
 
 function genUUID() {
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-		var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
-		return v.toString(16);
-	});
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+    var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 
 export default DeviceRoom;
