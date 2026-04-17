@@ -45,9 +45,13 @@ class DeviceRoom {
       if (this.connections.has(EID)) {
         return new Response('EID already connected', { status: 400 });
       }
-      if (pathnames[1] == "equipment") return this.handleEquipmentConnection(request, EID);
-      else if (pathnames[1] == "connect") return this.handleClientConnection(request, EID);
-      else return new Response('Invalid path', { status: 400 });
+      if (pathnames[1] == "equipment") {
+        console.log('处理设备连接');
+        return this.handleEquipmentConnection(request, EID);
+      } else if (pathnames[1] == "connect") {
+        console.log('处理客户端连接');
+        return this.handleClientConnection(request, EID);
+      } else return new Response('Invalid path', { status: 400 });
     }
 
     // const webSocketPair = new WebSocketPair();
