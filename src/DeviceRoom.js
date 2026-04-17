@@ -16,7 +16,7 @@ class DeviceRoom {
     const pathname = url.pathname;
     const pathnames = pathname.split('/');
     const upgradeHeader = request.headers.get("Upgrade");
-    console.log("收到请求:", method, pathname);
+    console.log("DO 收到请求:", method, pathname);
     // const stub = env.DEVICE_ROOM.getByName(EID);
     if (pathname === '/') {
       return new Response('Hello World!');
@@ -72,55 +72,130 @@ class DeviceRoom {
     return new Response('Hello World!');
   }
   async handleEquipmentConnection(request, EID) {
-    console.log('处理设备连接');
+    console.log('处理设备连接:', EID);
+
+    // 检查是否已存在连接（可选，取决于业务需求，有时允许同一设备多连接）
+    if (this.connections.has(EID)) {
+      console.log(`设备 ${EID} 已连接，关闭旧连接`);
+      const oldConn = this.connections.get(EID);
+      if (oldConn && oldConn.server) {
+        oldConn.server.close(1000, "Replaced by new connection");
+      }
+    }
+
     const webSocketPair = new WebSocketPair();
     const [client, server] = Object.values(webSocketPair);
+
     server.accept();
-    server.nativeSend = server.send;
-    server.send = function (...args) {
-      console.log("发送消息", ...args);
-      server.nativeSend(args);
-    }
+
+    // 修正 send 包装逻辑
+    const originalSend = server.send.bind(server);
+    server.send = (data) => {
+      console.log(`[DO-Server-${EID}] 发送消息:`, typeof data === 'string' ? data : '[Binary Data]');
+      originalSend(data);
+    };
+
+    // 存储连接上下文
     this.connections.set(EID, {
       server,
-      client
+      connectedAt: Date.now()
     });
+
     server.addEventListener("message", (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log("收到消息:", event.data);
+        console.log(`[DO-Server-${EID}] 收到消息:`, data);
+
+        // 示例：广播给所有连接的客户端（如果需要）
+        // this.broadcastToClients(EID, data);
+
       } catch (e) {
-        console.log("消息解析失败:", event.data);
+        console.error(`[DO-Server-${EID}] 消息解析失败:`, e);
       }
-      // const data = JSON.parse(event.data);
-      // if (data.type === "upload_file") {
-      //   for (let [id, conn] of this.connections) {
-      //   }
-      // }
     });
+
     server.addEventListener("close", () => {
-      console.log('连接关闭', EID);
+      console.log(`[DO-Server-${EID}] 连接关闭`);
       this.connections.delete(EID);
     });
-    console.log('连接成功', EID);
+
+    server.addEventListener("error", (err) => {
+      console.error(`[DO-Server-${EID}] 连接错误:`, err);
+      this.connections.delete(EID);
+    });
+
+    console.log(`[DO-Server-${EID}] 连接成功`);
+
+    // 必须返回 WebSocket 响应
     return new Response(null, {
       status: 101,
       webSocket: client
     });
   }
+
   async handleClientConnection(request, EID) {
-    console.log('处理客户端连接');
-    // const { socket, response } = await request.acceptUpgrade();
-    // this.connections.set(EID, socket);
-    // socket.addEventListener("message", (event) => {
-    //   const data = JSON.parse(event.data);
-    //   if (data.type === "upload_file") {
-    //     // 广播给其他设备
-    //     for (let [id, conn] of this.connections) {
-    //     }
-    //   }
-    // });
-    // return response;
+    console.log('处理客户端连接:', EID);
+
+    // 检查设备是否在线
+    if (!this.connections.has(EID)) {
+      return new Response(JSON.stringify({
+        code: 400,
+        msg: "目标设备未连接"
+      }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" }
+      });
+    }
+
+    const webSocketPair = new WebSocketPair();
+    const [client, server] = Object.values(webSocketPair);
+
+    server.accept();
+
+    // 生成一个唯一的客户端 ID
+    const clientId = crypto.randomUUID();
+
+    // 将客户端连接也存起来，以便双向通信
+    // 注意：这里简化处理，实际可能需要更复杂的结构来区分设备端和客户端
+    const deviceConn = this.connections.get(EID);
+
+    // 可以在 deviceConn 上挂载客户端列表，或者单独管理
+    if (!deviceConn.clients) {
+      deviceConn.clients = new Map();
+    }
+    deviceConn.clients.set(clientId, server);
+
+    server.addEventListener("message", (event) => {
+      console.log(`[DO-Client-${clientId}] 收到消息:`, event.data);
+      // 这里可以转发消息给设备端
+      if (deviceConn && deviceConn.server) {
+        try {
+          // 确保设备端连接仍然有效
+          deviceConn.server.send(event.data);
+        } catch (e) {
+          console.error("转发给设备失败", e);
+        }
+      }
+    });
+
+    server.addEventListener("close", () => {
+      console.log(`[DO-Client-${clientId}] 断开连接`);
+      if (deviceConn && deviceConn.clients) {
+        deviceConn.clients.delete(clientId);
+      }
+    });
+
+    // 发送连接成功消息
+    server.send(JSON.stringify({
+      code: 200,
+      msg: "连接成功",
+      clientId: clientId
+    }));
+
+    return new Response(null, {
+      status: 101,
+      webSocket: client
+    });
   }
 }
 
