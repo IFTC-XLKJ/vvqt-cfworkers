@@ -86,11 +86,17 @@ class DeviceRoom {
       client
     });
     server.addEventListener("message", (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "upload_file") {
-        for (let [id, conn] of this.connections) {
-        }
+      try {
+        const data = JSON.parse(event.data);
+        console.log("收到消息:", event.data);
+      } catch (e) {
+        console.log("消息解析失败:", event.data);
       }
+      // const data = JSON.parse(event.data);
+      // if (data.type === "upload_file") {
+      //   for (let [id, conn] of this.connections) {
+      //   }
+      // }
     });
     server.addEventListener("close", () => {
       console.log('连接关闭', EID);
