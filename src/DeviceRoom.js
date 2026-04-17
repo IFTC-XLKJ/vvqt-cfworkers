@@ -23,6 +23,7 @@ class DeviceRoom {
       return new Response('Hello World!');
     }
     if (pathnames[1] == "equipment" || pathnames[1] == "connect") {
+      console.log('EID:', EID);
       if (!upgradeHeader || upgradeHeader !== "websocket") {
         return new Response("Expected Upgrade: websocket", {
           status: 426
