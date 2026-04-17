@@ -1,8 +1,9 @@
 class DeviceRoom {
-  constructor(state, env) {
-    this.state = state;
+  constructor(ctx, env) {
+    super(ctx, env);
+    this.ctx = ctx;
     this.connections = new Map();
-    this.state.blockConcurrencyWhile(() => {
+    this.ctx.blockConcurrencyWhile(() => {
       // 初始化逻辑
       console.log('初始化');
     });
