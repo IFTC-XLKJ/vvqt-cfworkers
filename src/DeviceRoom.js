@@ -35,6 +35,8 @@ class DeviceRoom {
       if (this.connections.has(EID)) {
         return new Response('EID already connected', { status: 400 });
       }
+      if (pathnames[1] == "equipment") return this.handleEquipmentConnection(request, EID);
+      if (pathnames[1] == "connect") return this.handleClientConnection(request, EID);
     }
 
     // const webSocketPair = new WebSocketPair();
@@ -68,6 +70,32 @@ class DeviceRoom {
     //     webSocket: client
     //   });
     return new Response('Hello World!');
+  }
+  async handleEquipmentConnection(request, EID) {
+    const { socket, response } = await request.acceptUpgrade();
+    this.connections.set(EID, socket);
+    socket.addEventListener("message", (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "upload_file") {
+        // 广播给其他设备
+        for (let [id, conn] of this.connections) {
+        }
+      }
+    });
+    return response;
+  }
+  async handleClientConnection(request, EID) {
+    const { socket, response } = await request.acceptUpgrade();
+    this.connections.set(EID, socket);
+    socket.addEventListener("message", (event) => {
+      const data = JSON.parse(event.data);
+      if (data.type === "upload_file") {
+        // 广播给其他设备
+        for (let [id, conn] of this.connections) {
+        }
+      }
+    });
+    return response;
   }
 }
 
