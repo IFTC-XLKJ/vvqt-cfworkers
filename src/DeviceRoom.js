@@ -90,6 +90,11 @@ class DeviceRoom {
         }
       }
     });
+    server.addEventListener("close", () => {
+      console.log('连接关闭', EID);
+      this.connections.delete(EID);
+    });
+    console.log('连接成功', EID);
     return new Response(null, {
       status: 101,
       webSocket: client
