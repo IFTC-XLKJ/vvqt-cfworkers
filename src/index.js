@@ -79,7 +79,6 @@ export default {
 			if (fileCache[filePath]) {
 				console.log("命中临时文件缓存:", filePath);
 				return new Response(fileCache[filePath].blob, {
-					// 注意这里取 .blob
 					headers: {
 						'Content-Type': getMIMEType(filename) || 'application/octet-stream',
 						'Content-Disposition': `attachment; filename="${filename}"`,
