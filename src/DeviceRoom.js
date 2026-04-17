@@ -1,3 +1,7 @@
+import {
+  createClient
+} from "@supabase/supabase-js";
+
 class DeviceRoom {
   constructor(ctx, env) {
     this.ctx = ctx;
@@ -10,6 +14,11 @@ class DeviceRoom {
 
   // 处理 WebSocket 连接
   async fetch(request, env, ctx) {
+    const SUPABASE_URL = process.env.SUPABASE_URL;
+    const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const database = supabase.from("qtfile");
+    const storage = supabase.storage.from("qtfiles");
     console.log('请求', request);
     const url = new URL(request.url);
     const method = request.method;
