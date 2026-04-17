@@ -31,7 +31,10 @@ class DeviceRoom {
       if (!EID) {
         return new Response('Missing EID', { status: 400 });
       }
-    console.log('EID:', EID);
+      console.log('EID:', EID);
+      if (this.connections.has(EID)) {
+        return new Response('EID already connected', { status: 400 });
+      }
     }
 
     // const webSocketPair = new WebSocketPair();
