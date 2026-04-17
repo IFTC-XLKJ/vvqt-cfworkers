@@ -41,8 +41,10 @@ export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
 		const pathname = url.pathname;
+		const method = request.method;
 		const pathnames = pathname.split('/');
-		console.log("收到请求:", pathname);
+		const upgradeHeader = request.headers.get('Upgrade');
+		console.log("收到请求:", method, pathname);
 		if (pathname == "/") {
 			return new Response("Hello World!");
 		}
