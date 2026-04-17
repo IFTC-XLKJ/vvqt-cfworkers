@@ -63,7 +63,7 @@ export default {
 					status: 400
 				});
 			}
-			const id = env.DEVICE_ROOM.idFromName();
+			const id = env.DEVICE_ROOM.idFromName(EID);
 			const stub = env.DEVICE_ROOM.get(id);
 			return stub.fetch(request);
 		}
