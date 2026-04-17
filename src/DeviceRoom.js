@@ -55,6 +55,7 @@ class DeviceRoom {
     //     status: 101,
     //     webSocket: client
     //   });
+    return new Response('Hello World!');
   }
 }
 
