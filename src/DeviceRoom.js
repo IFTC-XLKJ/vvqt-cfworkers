@@ -109,10 +109,20 @@ class DeviceRoom {
         if (data.type == "upload_file") {
           const { name, path, size, part } = data;
           console.log("上传文件:", name, path, size, part);
-          const currentConnects = Array.from(this.connections.keys());
+          const clients = this.connections.get(EID).clients;
+          const currentConnects = Object.keys(clients);
           console.log("当前连接数:", currentConnects.length);
           for (let i = 0; i < currentConnects.length; i++) {
+            const connect = this.connections.get(currentConnects[i]);
             console.log('连接的UUID', currentConnects[i]);
+            if (connect && connect.server) {
+              connect.server.send(JSON.stringify({
+                code: 200,
+                bcode: 10103,
+                msg: "接收文件",
+                data: {},
+              }));
+            }
           }
         }
       } catch (e) {
