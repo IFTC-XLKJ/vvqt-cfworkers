@@ -56,7 +56,6 @@ export default {
 			}
 			console.log(env.DEVICE_ROOM);
 			console.log(Object.keys(env.DEVICE_ROOM));
-			// 获取或创建 Durable Object 的 ID (基于 EID)
 			const EID = pathnames[2];
 			if (!EID) {
 				return new Response("缺少设备ID", {
@@ -66,6 +65,235 @@ export default {
 			const id = env.DEVICE_ROOM.idFromName(EID);
 			const stub = env.DEVICE_ROOM.get(id);
 			return stub.fetch(request);
+		}
+		if (pathnames[1] == "download") {
+			const EID = pathnames[2];
+			const timestamp = pathnames[3];
+			const filename = pathnames[4];
+			if (!EID || !timestamp || !filename) {
+				return new Response("缺少参数", {
+					status: 400
+				});
+			}
+			const filePath = path.join(EID, timestamp, filename);
+			if (fileCache[filePath]) {
+				console.log("命中临时文件缓存:", filePath);
+				return new Response(fileCache[filePath].blob, {
+					// 注意这里取 .blob
+					headers: {
+						'Content-Type': getMIMEType(filename) || 'application/octet-stream',
+						'Content-Disposition': `attachment; filename="${filename}"`,
+						'Content-Length': fileCache[filePath].blob.size.toString(), // 注意这里取 .blob.size
+						'Access-Control-Allow-Origin': '*',
+						'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+						'Accept-Ranges': 'bytes',
+					}
+				});
+			}
+			console.log("未命中临时文件缓存:", filePath);
+			console.log("下载文件:", filePath);
+			const j = await storage
+				.list(filePath, {
+					limit: 1000000,
+					offset: 0,
+				});
+			if (j.error) {
+				console.error(j.error);
+				return new Response("文件不存在", {
+					status: 404
+				});
+			}
+			const data = j.data;
+			console.log("文件列表:", data);
+			if (data.length > 10) {
+				return new Response("文件超过100MB，无法下载预览", {
+					status: 400
+				});
+			}
+			if (data.length == 0) {
+				return new Response("文件不存在", {
+					status: 404
+				});
+			}
+			const fileBlobs = [];
+			data.sort((a, b) => {
+				return parseInt(a.name.replace("part", "")) - parseInt(b.name.replace("part", ""));
+			});
+			for (let i = 0; i < data.length; i++) {
+				const file = data[i];
+				console.log("下载文件:", path.join(filePath, file.name));
+				const k = await storage.download(path.join(filePath, file.name));
+				if (k.error) {
+					console.error(k.error);
+					return new Response("文件不存在", {
+						status: 404
+					});
+				}
+				const blob = k.data;
+				fileBlobs[i] = blob;
+				console.log("下载完成:", file.name);
+			}
+			console.log("文件列表:", fileBlobs);
+			console.log("MIME类型:", getMIMEType(filename));
+			const combinedBlob = new Blob(fileBlobs, {
+				type: getMIMEType(filename) || 'application/octet-stream'
+			});
+			fileCache[filePath] = {
+				blob: combinedBlob,
+				timestamp: Date.now()
+			};
+			return new Response(combinedBlob, {
+				headers: {
+					'Content-Type': getMIMEType(filename) || 'application/octet-stream',
+					'Content-Disposition': `attachment; filename="${filename}"`,
+					'Content-Length': combinedBlob.size.toString(),
+					'Access-Control-Allow-Origin': '*',
+					'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+					'Accept-Ranges': 'bytes',
+				}
+			});
+		}
+		if (pathnames[1] == "listfile") {
+			const EID = pathnames[2];
+			if (!EID) {
+				return new Response("缺少设备ID", {
+					status: 400
+				});
+			}
+			const searchParams = url.searchParams;
+
+			// 1. 处理分页参数
+			let page = parseInt(searchParams.get("page") || "1");
+			let pageSize = parseInt(searchParams.get("pageSize") || "100");
+			const MAX_PAGE_SIZE = 100;
+
+			// 校验 page
+			if (isNaN(page) || page < 1) {
+				page = 1;
+			}
+			// 校验 pageSize
+			if (isNaN(pageSize) || pageSize < 1) {
+				pageSize = 10;
+			} else if (pageSize > MAX_PAGE_SIZE) {
+				pageSize = MAX_PAGE_SIZE;
+			}
+
+			let subPath = pathnames.slice(3).join('/');
+			if (subPath && !subPath.endsWith('/')) {
+				subPath += '/';
+			}
+			const prefix = EID + (subPath ? '/' + subPath : '');
+
+			try {
+				// 注意：为了准确分页，通常需要先获取足够多的数据或者全量数据（如果数据量不大）
+				// 这里暂时保持 limit: 1000 或更大，以确保前端分页体验，或者你可以选择移除 limit 获取全部
+				// 如果数据量极大，建议后端只返回当前页所需的目录名，但那样无法准确知道 total
+				const {
+					data: listData,
+					error: listError
+				} = await storage.list(prefix, {
+					limit: 1024, // 增加限制以支持分页计算 total，或者根据业务调整
+					offset: 0,
+					search: '',
+				});
+
+				if (listError) {
+					console.error("列出文件失败:", listError);
+					return new Response(JSON.stringify({
+						code: 500, msg: "列出文件失败"
+					}), {
+						status: 500,
+						headers: {
+							'Content-Type': 'application/json'
+						}
+					});
+				}
+
+				// 过滤掉空占位符和无效数据
+				let items = (listData || []).filter(item => item.name !== '.emptyFolderPlaceholder');
+
+				// 2. 倒序排列
+				items.sort((a, b) => {
+					const numA = parseInt(a.name.replace(/[^0-9]/g, ''));
+					const numB = parseInt(b.name.replace(/[^0-9]/g, ''));
+
+					if (!isNaN(numA) && !isNaN(numB)) {
+						return numB - numA; // 数字倒序
+					}
+					return b.name.localeCompare(a.name); // 字符串倒序
+				});
+
+				// 3. 计算分页切片
+				const total = items.length;
+				const start = (page - 1) * pageSize;
+				const end = start + pageSize;
+
+				// 截取当前页的数据
+				const currentPageItems = items.slice(start,
+					end);
+
+				const files = [];
+
+				// 4. 遍历当前页的条目，获取下一级目录下的第一个文件
+				for (let i = 0; i < currentPageItems.length; i++) {
+					const item = currentPageItems[i];
+					const itemPath = path.join(prefix, item.name);
+
+					try {
+						const {
+							data: subList,
+							error: subError
+						} = await storage.list(itemPath, {
+							limit: 1,
+							offset: 0,
+						});
+
+						if (subError) {
+							console.warn(`查询子目录 ${itemPath} 失败:`, subError);
+							continue;
+						}
+
+						if (subList && subList.length > 0) {
+							const firstFile = subList[0];
+							files.push({
+								name: firstFile.name,
+								parentName: item.name,
+								path: path.join(itemPath, firstFile.name),
+								size: firstFile.metadata?.size || 0,
+								timestamp: parseInt(item.name) || 0,
+							});
+						}
+					} catch (err) {
+						console.error(`处理项 ${item.name} 时发生异常:`, err);
+					}
+				}
+
+				console.log("文件列表处理完成:", JSON.stringify(files, null, 2));
+
+				return new Response(JSON.stringify({
+					code: 200,
+					data: files,
+					page,
+					pageSize,
+					total: total // 返回总记录数，方便前端计算总页数
+				}), {
+					status: 200,
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+
+			} catch (e) {
+				console.error("列出文件异常:", e);
+				return new Response(JSON.stringify({
+					code: 500, msg: "服务器内部错误"
+				}), {
+					status: 500,
+					headers: {
+						'Content-Type': 'application/json'
+					}
+				});
+			}
 		}
 		return new Response("Hello World! Worker is running.");
 	},
