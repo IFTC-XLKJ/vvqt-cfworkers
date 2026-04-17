@@ -21,7 +21,7 @@ class DeviceRoom {
     if (!EID) {
       return new Response('Missing EID', { status: 400 });
     }
-    const stub = env.DEVICE_ROOM.getByName(EID);
+    // const stub = env.DEVICE_ROOM.getByName(EID);
     if (pathname === '/') {
       return new Response('Hello World!');
     }
