@@ -172,7 +172,10 @@ class DeviceRoom {
     if (!deviceConn.clients) {
       deviceConn.clients = new Map();
     }
-    deviceConn.clients.set(clientId, server);
+    deviceConn.clients.set(clientId, {
+      server,
+      connectedAt: Date.now()
+    });
     server.addEventListener("message", (event) => {
       console.log(`[DO-Client-${clientId}] 收到消息:`, event.data);
       if (deviceConn && deviceConn.server) {
