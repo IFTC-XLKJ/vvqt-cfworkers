@@ -42,9 +42,6 @@ class DeviceRoom {
       console.log('处理连接请求:', pathnames[1], 'EID:', EID);
       console.log('EID:', EID);
       console.log('当前连接数:', this.connections.size);
-      // if (this.connections.has(EID)) {
-      //   return new Response('EID already connected', { status: 400 });
-      // }
       if (pathnames[1] == "equipment") {
         console.log('处理设备连接');
         return this.handleEquipmentConnection(request, EID);
