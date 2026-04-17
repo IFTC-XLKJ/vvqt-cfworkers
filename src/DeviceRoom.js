@@ -108,22 +108,10 @@ class DeviceRoom {
         if (data.type == "upload_file") {
           const { name, path, size, part } = data;
           console.log("上传文件:", name, path, size, part);
-          const currentConnects = Object.keys(connects[EID]);
+          const currentConnects = Array.from(this.connections.keys());
           console.log("当前连接数:", currentConnects.length);
           for (let i = 0; i < currentConnects.length; i++) {
-            const connect = connects[EID][currentConnects[i]];
             console.log('连接的UUID', currentConnects[i]);
-            connect.socket.send(JSON.stringify({
-              code: 200,
-              bcode: 10103,
-              msg: "接收文件",
-              data: {
-                name,
-                path,
-                size,
-                part
-              },
-            }));
           }
         }
       } catch (e) {
@@ -153,8 +141,7 @@ class DeviceRoom {
 
   async handleClientConnection(request, EID) {
     console.log('处理客户端连接:', EID);
-
-    // 检查设备是否在线
+    const UUID = genUUID();
     if (!this.connections.has(EID)) {
       return new Response(JSON.stringify({
         code: 400,
@@ -215,6 +202,13 @@ class DeviceRoom {
       webSocket: client
     });
   }
+}
+
+function genUUID() {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	});
 }
 
 export default DeviceRoom;
