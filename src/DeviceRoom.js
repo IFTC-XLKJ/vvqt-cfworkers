@@ -73,8 +73,6 @@ class DeviceRoom {
   }
   async handleEquipmentConnection(request, EID) {
     console.log('处理设备连接:', EID);
-
-    // 检查是否已存在连接（可选，取决于业务需求，有时允许同一设备多连接）
     if (this.connections.has(EID)) {
       console.log(`设备 ${EID} 已连接，关闭旧连接`);
       const oldConn = this.connections.get(EID);
@@ -82,51 +80,41 @@ class DeviceRoom {
         oldConn.server.close(1000, "Replaced by new connection");
       }
     }
-
     const webSocketPair = new WebSocketPair();
     const [client, server] = Object.values(webSocketPair);
-
     server.accept();
-
-    // 修正 send 包装逻辑
     const originalSend = server.send.bind(server);
     server.send = (data) => {
       console.log(`[DO-Server-${EID}] 发送消息:`, typeof data === 'string' ? data : '[Binary Data]');
       originalSend(data);
     };
-
-    // 存储连接上下文
     this.connections.set(EID, {
       server,
       connectedAt: Date.now()
     });
-
     server.addEventListener("message", (event) => {
       try {
         const data = JSON.parse(event.data);
         console.log(`[DO-Server-${EID}] 收到消息:`, data);
-
-        // 示例：广播给所有连接的客户端（如果需要）
-        // this.broadcastToClients(EID, data);
-
       } catch (e) {
         console.error(`[DO-Server-${EID}] 消息解析失败:`, e);
       }
     });
-
     server.addEventListener("close", () => {
       console.log(`[DO-Server-${EID}] 连接关闭`);
       this.connections.delete(EID);
     });
-
     server.addEventListener("error", (err) => {
       console.error(`[DO-Server-${EID}] 连接错误:`, err);
       this.connections.delete(EID);
     });
-
     console.log(`[DO-Server-${EID}] 连接成功`);
-
-    // 必须返回 WebSocket 响应
+    server.send(JSON.stringify({
+      code: 200,
+      bcode: 10100,
+      msg: "连接成功",
+      timestamp: Date.now()
+    }));
     return new Response(null, {
       status: 101,
       webSocket: client
