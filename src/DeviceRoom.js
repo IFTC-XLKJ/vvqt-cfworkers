@@ -73,9 +73,12 @@ class DeviceRoom {
   }
   async handleEquipmentConnection(request, EID) {
     console.log('处理设备连接');
-    const { socket, response } = await request.acceptUpgrade();
+    const webSocketPair = new WebSocketPair();
+    const [client,server] = Object.values(webSocketPair);
+    server.accept();
+    // const { socket, response } = await request.acceptUpgrade();
     this.connections.set(EID, socket);
-    socket.addEventListener("message", (event) => {
+    server.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
       if (data.type === "upload_file") {
         // 广播给其他设备
@@ -83,7 +86,10 @@ class DeviceRoom {
         }
       }
     });
-    return response;
+    return new Response(null, {
+      status: 101,
+      webSocket: client
+    });
   }
   async handleClientConnection(request, EID) {
     console.log('处理客户端连接');
