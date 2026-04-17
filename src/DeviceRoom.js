@@ -172,31 +172,25 @@ class DeviceRoom {
     deviceConn.clients.set(clientId, server);
     server.addEventListener("message", (event) => {
       console.log(`[DO-Client-${clientId}] 收到消息:`, event.data);
-      // 这里可以转发消息给设备端
       if (deviceConn && deviceConn.server) {
         try {
-          // 确保设备端连接仍然有效
           deviceConn.server.send(event.data);
         } catch (e) {
           console.error("转发给设备失败", e);
         }
       }
     });
-
     server.addEventListener("close", () => {
       console.log(`[DO-Client-${clientId}] 断开连接`);
       if (deviceConn && deviceConn.clients) {
         deviceConn.clients.delete(clientId);
       }
     });
-
-    // 发送连接成功消息
     server.send(JSON.stringify({
       code: 200,
       msg: "连接成功",
       clientId: clientId
     }));
-
     return new Response(null, {
       status: 101,
       webSocket: client
