@@ -9,15 +9,21 @@ class DeviceRoom {
   }
 
   // 处理 WebSocket 连接
-  async fetch(request) {
+  async fetch(request, env, ctx) {
     console.log('请求', request);
     const url = new URL(request.url);
+    const method = request.method;
     const pathname = url.pathname;
+    const pathnames = pathname.split('/');
+    console.log("收到请求:", method, pathname);
+    const EID = pathnames[2];
+    if (!EID) {
+      return new Response('Missing EID', { status: 400 });
+    }
+    const stub = env.DEVICE_ROOM.getByName(EID);
     if (pathname === '/') {
       return new Response('Hello World!');
     }
-    // const method = request.method;
-    // const pathnames = pathname.split('/');
     // const upgradeHeader = request.headers.get("Upgrade");
     // if (!upgradeHeader || upgradeHeader !== "websocket") {
     //   return new Response("Expected Upgrade: websocket", {
