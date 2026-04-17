@@ -1,6 +1,5 @@
-class DeviceRoom extends DurableObject {
+class DeviceRoom {
   constructor(ctx, env) {
-    super(ctx, env);
     this.ctx = ctx;
     this.connections = new Map();
     this.ctx.blockConcurrencyWhile(() => {
