@@ -99,6 +99,7 @@ class DeviceRoom {
     };
     this.connections.set(EID, {
       server,
+      clients: new Map(),
       connectedAt: Date.now()
     });
     server.addEventListener("message", (event) => {
@@ -141,7 +142,6 @@ class DeviceRoom {
 
   async handleClientConnection(request, EID) {
     console.log('处理客户端连接:', EID);
-    const UUID = genUUID();
     if (!this.connections.has(EID)) {
       return new Response(JSON.stringify({
         code: 400,
@@ -151,25 +151,15 @@ class DeviceRoom {
         headers: { "Content-Type": "application/json" }
       });
     }
-
     const webSocketPair = new WebSocketPair();
     const [client, server] = Object.values(webSocketPair);
-
     server.accept();
-
-    // 生成一个唯一的客户端 ID
     const clientId = crypto.randomUUID();
-
-    // 将客户端连接也存起来，以便双向通信
-    // 注意：这里简化处理，实际可能需要更复杂的结构来区分设备端和客户端
     const deviceConn = this.connections.get(EID);
-
-    // 可以在 deviceConn 上挂载客户端列表，或者单独管理
     if (!deviceConn.clients) {
       deviceConn.clients = new Map();
     }
     deviceConn.clients.set(clientId, server);
-
     server.addEventListener("message", (event) => {
       console.log(`[DO-Client-${clientId}] 收到消息:`, event.data);
       // 这里可以转发消息给设备端
