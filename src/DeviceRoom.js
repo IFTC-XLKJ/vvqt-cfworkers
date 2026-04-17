@@ -15,22 +15,24 @@ class DeviceRoom {
     const method = request.method;
     const pathname = url.pathname;
     const pathnames = pathname.split('/');
+    const upgradeHeader = request.headers.get("Upgrade");
     console.log("收到请求:", method, pathname);
-    const EID = pathnames[2];
-    if (!EID) {
-      return new Response('Missing EID', { status: 400 });
-    }
     console.log('EID:', EID);
     // const stub = env.DEVICE_ROOM.getByName(EID);
     if (pathname === '/') {
       return new Response('Hello World!');
     }
-    // const upgradeHeader = request.headers.get("Upgrade");
-    // if (!upgradeHeader || upgradeHeader !== "websocket") {
-    //   return new Response("Expected Upgrade: websocket", {
-    //     status: 426
-    //   });
-    // }
+    if (pathnames[1] == "equipment" || pathnames[1] == "connect") {
+      if (!upgradeHeader || upgradeHeader !== "websocket") {
+        return new Response("Expected Upgrade: websocket", {
+          status: 426
+        });
+      }
+      const EID = pathnames[2];
+      if (!EID) {
+        return new Response('Missing EID', { status: 400 });
+      }
+    }
 
     // const webSocketPair = new WebSocketPair();
     // const [client,
