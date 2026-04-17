@@ -1,7 +1,7 @@
 class DeviceRoom {
   constructor(state, env) {
     this.state = state;
-    this.connections = new Map(); // 替代原来的 connects
+    this.connections = new Map();
     this.state.blockConcurrencyWhile(() => {
       // 初始化逻辑
       console.log('初始化');

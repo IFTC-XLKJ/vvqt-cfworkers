@@ -49,12 +49,23 @@ export default {
 			return new Response("Hello World!");
 		}
 		if (pathnames[1] == "equipment" || pathnames[1] == "connect") {
+			if (!upgradeHeader || upgradeHeader !== 'websocket') {
+				return new Response('Expected Upgrade: websocket', {
+					status: 426
+				});
+			}
 			console.log(env.DEVICE_ROOM);
 			console.log(Object.keys(env.DEVICE_ROOM));
-			// 获取或创建 Durable Object 的 ID (基于 EID 或 Room ID)
-			// const id = env.DEVICE_ROOM.idFromName("GLOBAL_ROOM");
-			// const stub = env.DEVICE_ROOM.get(id);
-			// return stub.fetch(request);
+			// 获取或创建 Durable Object 的 ID (基于 EID)
+			const EID = pathnames[2];
+			if (!EID) {
+				return new Response("缺少设备ID", {
+					status: 400
+				});
+			}
+			const id = env.DEVICE_ROOM.idFromName();
+			const stub = env.DEVICE_ROOM.get(id);
+			return stub.fetch(request);
 		}
 		return new Response("Hello World! Worker is running.");
 	},
