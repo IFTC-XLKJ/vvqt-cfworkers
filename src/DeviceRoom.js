@@ -40,7 +40,9 @@ class DeviceRoom {
       if (!EID) {
         return new Response('Missing EID', { status: 400 });
       }
+      console.log('处理连接请求:', pathnames[1], 'EID:', EID);
       console.log('EID:', EID);
+      console.log('当前连接数:', this.connections.size);
       if (this.connections.has(EID)) {
         return new Response('EID already connected', { status: 400 });
       }
