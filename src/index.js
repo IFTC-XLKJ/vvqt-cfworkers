@@ -39,20 +39,22 @@ function cleanExpiredCache() {
 
 export default {
 	async fetch(request, env, ctx) {
-        // 这里是一个简单的示例，防止部署后直接报错
-        // 请根据你的业务需求，将之前注释掉的逻辑移到这里
+		const url = new URL(request.url);
+		const pathname = url.pathname;
+		console.log("收到请求:", pathname);
+		if (pathname == "/") {
+			return new Response("Hello World!");
+		}
 		return new Response("Hello World! Worker is running.");
 	},
-    
-    // 如果你需要定时任务，也可以保留
-    async scheduled(event, env, ctx) {
-        console.log("定时任务触发:", event.cron);
-        try {
-            cleanExpiredCache();
-        } catch (error) {
-            console.error("定时任务执行失败:", error);
-        }
-    }
+	async scheduled(event, env, ctx) {
+		console.log("定时任务触发:", event.cron);
+		try {
+			cleanExpiredCache();
+		} catch (error) {
+			console.error("定时任务执行失败:", error);
+		}
+	}
 };
 
 // export default {
