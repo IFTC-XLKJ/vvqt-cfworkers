@@ -12,7 +12,10 @@ class DeviceRoom {
   async fetch(request) {
     console.log('请求', request);
     const url = new URL(request.url);
-    // const pathname = url.pathname;
+    const pathname = url.pathname;
+    if (pathname === '/') {
+      return new Response('Hello World!');
+    }
     // const method = request.method;
     // const pathnames = pathname.split('/');
     // const upgradeHeader = request.headers.get("Upgrade");
