@@ -74,9 +74,13 @@ class DeviceRoom {
   async handleEquipmentConnection(request, EID) {
     console.log('处理设备连接');
     const webSocketPair = new WebSocketPair();
-    const [client,server] = Object.values(webSocketPair);
+    const [client, server] = Object.values(webSocketPair);
     server.accept();
-    // const { socket, response } = await request.acceptUpgrade();
+    server.nativeSend = server.send;
+    server.send = function (...args) {
+      console.log("发送消息", ...args);
+      server.nativeSend(args);
+    }
     this.connections.set(EID, socket);
     server.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
