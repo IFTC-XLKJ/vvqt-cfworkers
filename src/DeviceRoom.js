@@ -1,4 +1,4 @@
-class DeviceRoom {
+class DeviceRoom extends DurableObject {
   constructor(ctx, env) {
     super(ctx, env);
     this.ctx = ctx;
