@@ -10,12 +10,12 @@ class DeviceRoom {
 
   // 处理 WebSocket 连接
   async fetch(request) {
-    const url = new URL(request.url);
-    const pathname = url.pathname;
-    const method = request.method;
-    const pathnames = pathname.split('/');
-    const upgradeHeader = request.headers.get("Upgrade");
     console.log('请求', request);
+    const url = new URL(request.url);
+    // const pathname = url.pathname;
+    // const method = request.method;
+    // const pathnames = pathname.split('/');
+    // const upgradeHeader = request.headers.get("Upgrade");
     // if (!upgradeHeader || upgradeHeader !== "websocket") {
     //   return new Response("Expected Upgrade: websocket", {
     //     status: 426
