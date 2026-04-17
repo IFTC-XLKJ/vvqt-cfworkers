@@ -105,6 +105,27 @@ class DeviceRoom {
       try {
         const data = JSON.parse(event.data);
         console.log(`[DO-Server-${EID}] 收到消息:`, data);
+        if (data.type == "upload_file") {
+          const { name, path, size, part } = data;
+          console.log("上传文件:", name, path, size, part);
+          const currentConnects = Object.keys(connects[EID]);
+          console.log("当前连接数:", currentConnects.length);
+          for (let i = 0; i < currentConnects.length; i++) {
+            const connect = connects[EID][currentConnects[i]];
+            console.log('连接的UUID', currentConnects[i]);
+            connect.socket.send(JSON.stringify({
+              code: 200,
+              bcode: 10103,
+              msg: "接收文件",
+              data: {
+                name,
+                path,
+                size,
+                part
+              },
+            }));
+          }
+        }
       } catch (e) {
         console.error(`[DO-Server-${EID}] 消息解析失败:`, e);
       }
