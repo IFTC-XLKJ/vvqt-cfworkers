@@ -81,11 +81,13 @@ class DeviceRoom {
       console.log("发送消息", ...args);
       server.nativeSend(args);
     }
-    this.connections.set(EID, socket);
+    this.connections.set(EID, {
+      server,
+      client
+    });
     server.addEventListener("message", (event) => {
       const data = JSON.parse(event.data);
       if (data.type === "upload_file") {
-        // 广播给其他设备
         for (let [id, conn] of this.connections) {
         }
       }
@@ -102,17 +104,17 @@ class DeviceRoom {
   }
   async handleClientConnection(request, EID) {
     console.log('处理客户端连接');
-    const { socket, response } = await request.acceptUpgrade();
-    this.connections.set(EID, socket);
-    socket.addEventListener("message", (event) => {
-      const data = JSON.parse(event.data);
-      if (data.type === "upload_file") {
-        // 广播给其他设备
-        for (let [id, conn] of this.connections) {
-        }
-      }
-    });
-    return response;
+    // const { socket, response } = await request.acceptUpgrade();
+    // this.connections.set(EID, socket);
+    // socket.addEventListener("message", (event) => {
+    //   const data = JSON.parse(event.data);
+    //   if (data.type === "upload_file") {
+    //     // 广播给其他设备
+    //     for (let [id, conn] of this.connections) {
+    //     }
+    //   }
+    // });
+    // return response;
   }
 }
 
