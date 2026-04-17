@@ -41,9 +41,18 @@ export default {
 	async fetch(request, env, ctx) {
 		const url = new URL(request.url);
 		const pathname = url.pathname;
+		const pathnames = pathname.split('/');
 		console.log("收到请求:", pathname);
 		if (pathname == "/") {
 			return new Response("Hello World!");
+		}
+		if (pathnames[1] == "equipment" || pathnames[1] == "connect") {
+			console.log(env.DEVICE_ROOM);
+			console.log(Object.keys(env.DEVICE_ROOM));
+			// 获取或创建 Durable Object 的 ID (基于 EID 或 Room ID)
+			// const id = env.DEVICE_ROOM.idFromName("GLOBAL_ROOM");
+			// const stub = env.DEVICE_ROOM.get(id);
+			// return stub.fetch(request);
 		}
 		return new Response("Hello World! Worker is running.");
 	},
