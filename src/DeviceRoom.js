@@ -72,6 +72,7 @@ class DeviceRoom {
     return new Response('Hello World!');
   }
   async handleEquipmentConnection(request, EID) {
+    console.log('处理设备连接');
     const { socket, response } = await request.acceptUpgrade();
     this.connections.set(EID, socket);
     socket.addEventListener("message", (event) => {
@@ -85,6 +86,7 @@ class DeviceRoom {
     return response;
   }
   async handleClientConnection(request, EID) {
+    console.log('处理客户端连接');
     const { socket, response } = await request.acceptUpgrade();
     this.connections.set(EID, socket);
     socket.addEventListener("message", (event) => {
