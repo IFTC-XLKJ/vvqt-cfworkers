@@ -9,7 +9,7 @@
 */
 
 import {
-  createClient
+	createClient
 } from "@supabase/supabase-js";
 import path from "path";
 import fs from "fs/promises";
@@ -17,9 +17,7 @@ import mime from "mime";
 import * as process from "node:process";
 import DeviceRoom from "./DeviceRoom.js";
 
-export default {
-  DeviceRoom
-};
+export { DeviceRoom };
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -31,13 +29,31 @@ const fileCache = {};
 const connects = {};
 
 function cleanExpiredCache() {
-  const now = Date.now();
-  for (let key in fileCache) {
-    if (fileCache[key].timestamp && now - fileCache[key].timestamp > 1000 * 60 * 60) {
-      delete fileCache[key];
-    }
-  }
+	const now = Date.now();
+	for (let key in fileCache) {
+		if (fileCache[key].timestamp && now - fileCache[key].timestamp > 1000 * 60 * 60) {
+			delete fileCache[key];
+		}
+	}
 }
+
+export default {
+	async fetch(request, env, ctx) {
+        // 这里是一个简单的示例，防止部署后直接报错
+        // 请根据你的业务需求，将之前注释掉的逻辑移到这里
+		return new Response("Hello World! Worker is running.");
+	},
+    
+    // 如果你需要定时任务，也可以保留
+    async scheduled(event, env, ctx) {
+        console.log("定时任务触发:", event.cron);
+        try {
+            cleanExpiredCache();
+        } catch (error) {
+            console.error("定时任务执行失败:", error);
+        }
+    }
+};
 
 // export default {
 //   async fetch(request, env, ctx) {
@@ -476,26 +492,26 @@ function cleanExpiredCache() {
 //   DeviceRoom,
 // };
 
-  function genUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
-      var r = Math.random() * 16 | 0, v = c == 'x' ? r: (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
+function genUUID() {
+	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
+		var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+		return v.toString(16);
+	});
+}
 
-  function getMIMEType(filename) {
-    return mime.getType(filename);
-  }
+function getMIMEType(filename) {
+	return mime.getType(filename);
+}
 
-  async function isFileExists(filePath) {
-    try {
-      const stat = await fs.stat(path.join(filePath));
-      return stat.isFile();
-    } catch (e) {
-      return false;
-    }
-  }
+async function isFileExists(filePath) {
+	try {
+		const stat = await fs.stat(path.join(filePath));
+		return stat.isFile();
+	} catch (e) {
+		return false;
+	}
+}
 
-  /*export {
-    DeviceRoom
-  };*/
+/*export {
+  DeviceRoom
+};*/
