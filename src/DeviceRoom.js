@@ -11,7 +11,7 @@ class DeviceRoom {
       console.log('初始化');
     });
     setInterval(() => {
-      console.log(this.connections.size);
+      console.log(this.connections.toString());
     }, 1000);
   }
 
