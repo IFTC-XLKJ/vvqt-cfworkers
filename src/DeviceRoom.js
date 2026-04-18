@@ -108,7 +108,7 @@ class DeviceRoom {
     server.addEventListener("message", (event) => {
       try {
         const data = JSON.parse(event.data);
-        console.log(`[DO-Server-${EID}] 收到消息:`, data);
+        console.log(`[DO-Server-${EID}] 收到消息:` + JSON.stringify(data));
         if (data.type == "upload_file") {
           const { name, path, size, part } = data;
           console.log("上传文件:", name, path, size, part);
