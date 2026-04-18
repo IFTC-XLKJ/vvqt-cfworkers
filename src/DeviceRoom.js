@@ -10,6 +10,9 @@ class DeviceRoom {
       // 初始化逻辑
       console.log('初始化');
     });
+    setInterval(() => {
+      console.log(this.connections.size);
+    }, 1000);
   }
 
   // 处理 WebSocket 连接
