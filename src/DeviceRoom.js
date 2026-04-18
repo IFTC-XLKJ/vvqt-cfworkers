@@ -118,6 +118,7 @@ class DeviceRoom {
           for (let i = 0; i < currentConnects.length; i++) {
             const connect = this.connections.get(currentConnects[i]);
             console.log('连接的UUID', currentConnects[i]);
+            console.log('连接的server', connect.server);
             if (connect && connect.server) {
               connect.server.send(JSON.stringify({
                 code: 200,
