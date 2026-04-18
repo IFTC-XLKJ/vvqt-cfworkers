@@ -112,6 +112,9 @@ class DeviceRoom {
       try {
         const data = JSON.parse(event.data);
         console.log(`[DO-Server-${EID}] 收到消息:` + JSON.stringify(data));
+        if (data.type == "check") {
+          console.log(data.timestamp + " 检查连接" + EID + "的连接数:" + this.connections.get(EID).clients.size);
+        }
         if (data.type == "upload_file") {
           const { name, path, size, part } = data;
           console.log("上传文件:", name, path, size, part);
